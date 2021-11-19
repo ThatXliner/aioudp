@@ -2,7 +2,7 @@ import asyncio
 import functools
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import NoReturn, Optional
+from typing import AsyncIterator, NoReturn, Optional
 
 from aioudp import connection
 
@@ -30,7 +30,7 @@ class ClientProtocol(asyncio.DatagramProtocol):
 
 
 @asynccontextmanager
-async def connect(host: str, port: int):
+async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     """Connects to a UDP server.
 
     .. seealso::
@@ -53,11 +53,11 @@ async def connect(host: str, port: int):
     )
     try:
         yield connection.Connection(  # TODO: REFACTOR: minimal args
-            send_func=transport.sendto,
+            send_func=transport.sendto,  # type: ignore
             recv_func=msgs.get,
             is_closing=transport.is_closing,
             get_local_addr=functools.partial(transport.get_extra_info, "sockname"),
             get_remote_addr=functools.partial(transport.get_extra_info, "peername"),
-        )  # type: ignore
+        )
     finally:
         transport.close()

@@ -2,7 +2,7 @@ import asyncio
 import functools
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import Awaitable, Callable, Dict, NoReturn, Optional
+from typing import AsyncIterator, Awaitable, Callable, Dict, NoReturn, Optional
 
 from aioudp import connection
 
@@ -23,10 +23,10 @@ class ServerProtocol(asyncio.DatagramProtocol):
             self.msg_handler[addr] = asyncio.Queue()
             assert self.transport is not None
             asyncio.create_task(
-                self.handler(
+                self.handler(  # type: ignore  # See connnection.py
                     connection.Connection(  # TODO: REFACTOR: minimal args
-                        send_func=functools.partial(self.transport.sendto, addr=addr),  # type: ignore
-                        recv_func=self.msg_handler[addr].get,  # type: ignore
+                        send_func=functools.partial(self.transport.sendto, addr=addr),
+                        recv_func=self.msg_handler[addr].get,
                         is_closing=self.transport.is_closing,
                         get_local_addr=functools.partial(
                             self.transport.get_extra_info, "sockname"
@@ -52,7 +52,7 @@ class ServerProtocol(asyncio.DatagramProtocol):
 @asynccontextmanager
 async def serve(
     host: str, port: int, handler: Callable[[connection.Connection], Awaitable[None]]
-) -> None:
+) -> AsyncIterator[None]:
     """Runs a UDP server.
 
     See the docs for an example UDP echo server

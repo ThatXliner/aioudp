@@ -30,7 +30,7 @@ class Connection:  # TODO: REFACTOR: minimal args
             AddrType: This is a `tuple` containing the hostname and port
 
         """
-        return self.get_local_addr()
+        return self.get_local_addr()  # type: ignore  # This is a bug https://github.com/python/mypy/issues/6910
 
     @property
     def remote_address(self) -> Optional[AddrType]:
@@ -43,7 +43,7 @@ class Connection:  # TODO: REFACTOR: minimal args
             AddrType: This is a `tuple` containing the hostname and port
 
         """
-        return self.get_remote_addr()
+        return self.get_remote_addr()  # type: ignore  # See above
 
     async def recv(self) -> bytes:
         """Receives a message from the connection
@@ -55,9 +55,9 @@ class Connection:  # TODO: REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
 
         """
-        the_next_one = await self.recv_func()
+        the_next_one = await self.recv_func()  # type: ignore  # See above
         if the_next_one is None:
-            assert self.is_closing()
+            assert self.is_closing()  # type: ignore  # See above
             raise exceptions.ConnectionClosedError("The connection is closed")
         return the_next_one
 
@@ -74,11 +74,11 @@ class Connection:  # TODO: REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
             ValueError: There is no data to send
         """
-        if self.is_closing():
+        if self.is_closing():  # type: ignore  # See above
             raise exceptions.ConnectionClosedError("The connection is closed")
         if not data:
             raise ValueError("You must send some data")
-        self.send_func(data)
+        self.send_func(data)  # type: ignore  # See above
 
     def __aiter__(self) -> "Connection":
         return self
