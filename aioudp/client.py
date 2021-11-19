@@ -9,10 +9,10 @@ from aioudp import connection
 
 @dataclass
 class ClientProtocol(asyncio.DatagramProtocol):
-    msg_queue: asyncio.Queue[Optional[bytes]]
+    msg_queue: "asyncio.Queue[Optional[bytes]]"
     transport: Optional[asyncio.BaseTransport] = None
 
-    # def connection_made(self, transport: asyncio.BaseTransport) -> None:
+    # def connection_made(self, transport: "asyncio.BaseTransport") -> None:
     #     self.transport = transport
 
     def datagram_received(self, data: bytes, _: connection.AddrType) -> None:
@@ -43,9 +43,9 @@ async def connect(host: str, port: int):
 
     """
     loop = asyncio.get_running_loop()
-    msgs: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
-    transport: asyncio.BaseTransport
-    _: asyncio.BaseProtocol
+    msgs: "asyncio.Queue[Optional[bytes]]" = asyncio.Queue()
+    transport: "asyncio.BaseTransport"
+    _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
         lambda: ClientProtocol(msgs),
         remote_addr=(host, port),

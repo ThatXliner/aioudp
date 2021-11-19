@@ -10,12 +10,12 @@ from aioudp import connection
 @dataclass
 class ServerProtocol(asyncio.DatagramProtocol):
     handler: Callable[[connection.Connection], Awaitable[None]]
-    msg_handler: Dict[connection.AddrType, asyncio.Queue[Optional[bytes]]] = field(
+    msg_handler: Dict[connection.AddrType, "asyncio.Queue[Optional[bytes]]"] = field(
         default_factory=dict
     )
     transport: Optional[asyncio.DatagramTransport] = None
 
-    def connection_made(self, transport: asyncio.DatagramTransport) -> None:  # type: ignore
+    def connection_made(self, transport: "asyncio.DatagramTransport") -> None:  # type: ignore
         self.transport = transport
 
     def datagram_received(self, data: bytes, addr: connection.AddrType) -> None:
@@ -72,8 +72,8 @@ async def serve(
 
     """
     loop = asyncio.get_running_loop()
-    transport: asyncio.BaseTransport
-    _: asyncio.BaseProtocol
+    transport: "asyncio.BaseTransport"
+    _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
         lambda: ServerProtocol(handler),
         local_addr=(host, port),
