@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "aioudp"
+description = "A better API for asynchronous UDP"
+authors = ["Bryan Hu <bryan.hu.2020@gmail.com>"]
+version = "0.1.0"
+
+readme = "README.md"
+license = "GPL-3.0-or-later"
+
+classifiers = [
+    # Get the list of trove classifiers here: https://pypi.org/classifiers/
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Natural Language :: English",
+]
+documentation = "https://aioudp.readthedocs.io/en/latest/index.html"
+homepage = "https://github.com/ThatXliner/aioudp"
+# keywords = ["awesome", "project"]  # Maximum of 5 keywords
+[tool.poetry.dependencies]
+python = "^3.7"
+[tool.poetry.dev-dependencies]
+black = "^21.5b0"
+mypy = "^0.812"
+isort = "^5.8.0"
+pylint = "^2.8.2"
+toml = "^0.10.2"
+hypothesis = "^6.12.0"
+pytest-cov = "^2.11.1"
+Sphinx = "^4.0.0"
+pytest = "^6.2.5"
+sphinxcontrib-trio = "^1.1.2"  # For documenting "async with", etc
+sphinx-book-theme = "^0.1.7"
+pytest-asyncio = "^0.16.0"
+
+[tool.poe.tasks]
+docs = {cmd = "sphinx-build docs build", help = "Build documentation"}
+
+# Code formatting
+black = {cmd = "black .", help = "Run black on codebase"}
+isort = {cmd = "isort . --profile=black", help = "Run isort on codebase"}
+format = ["black", "isort"]
+
+# Code linting
+mypy = {cmd = "mypy aioudp --strict", help = "Run MyPy on codebase"}
+pylint = {cmd = "pylint aioudp --fail-under=8", help = "Run Pylint on codebase"}
+check_black = {cmd = "black aioudp --check"}
+check_isort = {cmd = "isort aioudp --check --profile=black"}
+
+# Combining the 2
+style = ["check_black", "check_isort"]
+codebase = ["pylint", "mypy"]
+
+lint = ["style", "codebase"]
+
+test = {cmd = "pytest -vvv", help = "Run test suite"}
+ci = {cmd = "pytest -vvv --cov=aioudp --cov-report=xml", help = "Run test suite with codecoverage (XML format)"}
+dev = {cmd = "pytest -vvv --cov=aioudp --cov-report=html", help = "Run test suite for developers"}
+
+clean = "rm -rf build .pytest_cache/ .hypothesis .coverage htmlcov"
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

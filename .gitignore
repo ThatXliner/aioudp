@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.hypothesis/
+.pytest_cache/
+.DS_Store
+.mypy_cache/
+.env
+htmlcov/
+dist/
+build/
+.coverage*
