@@ -17,21 +17,25 @@ classifiers = [
 documentation = "https://aioudp.readthedocs.io/en/latest/index.html"
 homepage = "https://github.com/ThatXliner/aioudp"
 keywords = ["udp", "asyncio"]  # Maximum of 5 keywords
+
 [tool.poetry.dependencies]
 python = "^3.7"
+
 [tool.poetry.dev-dependencies]
 black = "^21.5b0"
 mypy = "^0.812"
 isort = "^5.8.0"
 pylint = "^2.8.2"
+
+pytest = "^6.2.5"
 toml = "^0.10.2"
 hypothesis = "^6.12.0"
 pytest-cov = "^2.11.1"
+pytest-asyncio = "^0.16.0"
+
 Sphinx = "^4.0.0"
-pytest = "^6.2.5"
 sphinxcontrib-trio = "^1.1.2"  # For documenting "async with", etc
 sphinx-book-theme = "^0.1.7"
-pytest-asyncio = "^0.16.0"
 
 [tool.poe.tasks]
 docs = {cmd = "sphinx-build docs build", help = "Build documentation"}
