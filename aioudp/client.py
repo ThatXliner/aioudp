@@ -10,10 +10,6 @@ from aioudp import connection
 @dataclass
 class ClientProtocol(asyncio.DatagramProtocol):
     msg_queue: "asyncio.Queue[Optional[bytes]]"
-    transport: Optional[asyncio.BaseTransport] = None
-
-    # def connection_made(self, transport: "asyncio.BaseTransport") -> None:
-    #     self.transport = transport
 
     def datagram_received(self, data: bytes, _: connection.AddrType) -> None:
         self.msg_queue.put_nowait(data)
