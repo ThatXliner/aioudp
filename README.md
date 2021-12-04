@@ -11,13 +11,18 @@ Here's an example echo server:
 ```py
 import aioudp
 import asyncio
+import signal
 
 async def main():
     async def handler(connection):
         async for message in connection:
             await connection.send(message)
+
+    loop = asyncio.get_running_loop()
+    stop = loop.create_future()
+    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
     async with aioudp.serve("localhost", 9999, handler):
-        await asyncio.Future()  # Serve forever
+        await stop  # Serve forever
 
 if __name__ == '__main__':
     asyncio.run(main())
