@@ -9,18 +9,24 @@ A [websockets](https://websockets.readthedocs.io/en/stable/index.html)-like API 
 Here's an example echo server:
 
 ```py
-import aioudp
 import asyncio
 import signal
+
+import aioudp
+
 
 async def main():
     async def handler(connection):
         async for message in connection:
             await connection.send(message)
 
+    # Optional. This is for properly exiting the server when Ctrl-C is pressed
+    # or when the process is killed/terminated
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
     loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+    loop.add_signal_handler(signal.SIGINT, stop.set_result, None)
+
     async with aioudp.serve("localhost", 9999, handler):
         await stop  # Serve forever
 
@@ -31,8 +37,10 @@ if __name__ == '__main__':
 And a client to connect to the server:
 
 ```py
-import aioudp
 import asyncio
+
+import aioudp
+
 
 async def main():
     async with aioudp.connect("localhost", 9999) as connection:
