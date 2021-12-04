@@ -1,6 +1,6 @@
 # AioUDP
 
-[![Documentation Status](https://readthedocs.org/projects/aioudp/badge/?version=latest)](https://aioudp.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/aioudp/badge/?version=latest)](https://aioudp.readthedocs.io/en/latest/?badge=latest) [![codecov](https://codecov.io/gh/ThatXliner/aioudp/branch/main/graph/badge.svg?token=xZ7HVG8Owm)](https://codecov.io/gh/ThatXliner/aioudp)
 
 > A better API for asynchronous UDP
 
