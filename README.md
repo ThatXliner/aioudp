@@ -27,6 +27,7 @@ async def main():
     loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
     loop.add_signal_handler(signal.SIGINT, stop.set_result, None)
 
+    # Serve the server
     async with aioudp.serve("localhost", 9999, handler):
         await stop  # Serve forever
 
