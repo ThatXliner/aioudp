@@ -20,10 +20,8 @@ It has a similar API to this library. In fact, this library's API was inspired b
 Why is my code hanging?
 -----------------------
 
-There are 2 things that may have happened:
+You may be using ``recv`` when the server didn't send anything to the client or an exception happened in the server. If this is the case, you should :ref:`add a timeout <faq-add-timeout>`.
 
- - You're using ``recv`` when the server didn't send anything to the client or an exception happened in the server. If this happens, you should :ref:`add a timeout <faq-add-timeout>`.
- - The client or server is immediately trying to recieve. You should send one trash ack message to the server before using the connection. Since this library is meant to be a protocol-agnostic wrapper, I'm still debating whether I should automatically support this trash-message-connection (because it may become boilerplate). See issue `#2 <https://github.com/ThatXliner/aioudp/issues/2>`_
 
 .. _faq-add-timeout:
 
