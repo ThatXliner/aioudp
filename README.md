@@ -51,3 +51,5 @@ async def main():
 if __name__ == '__main__':
     asyncio.run(main())
 ```
+
+NOTE: This library provides no other abstractions over the existing UDP interface in `asyncio` other than the `async`/`await`-based API. This means RPC or any implicit structure is not handled or done.
