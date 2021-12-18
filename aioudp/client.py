@@ -43,9 +43,7 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     transport: "asyncio.BaseTransport"
     _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ClientProtocol(msgs),
-        remote_addr=(host, port),
-        # FIXME: Should use `local_addr` or `remote_addr` be configurable?
+        lambda: ClientProtocol(msgs), remote_addr=(host, port)
     )
     try:
         yield connection.Connection(  # TODO: REFACTOR: minimal args

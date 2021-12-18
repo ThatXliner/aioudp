@@ -75,9 +75,7 @@ async def serve(
     transport: "asyncio.BaseTransport"
     _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ServerProtocol(handler),
-        local_addr=(host, port),
-        # FIXME: Should use `local_addr` or `remote_addr` be configurable?
+        lambda: ServerProtocol(handler), local_addr=(host, port)
     )
     try:
         yield
