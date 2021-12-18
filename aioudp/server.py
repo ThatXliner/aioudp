@@ -71,11 +71,16 @@ async def serve(
             and doesn't need to return anything.
 
     """
+
+    async def wrap_handler(con: connection.Connection) -> None:
+        await con.recv()
+        return await handler(con)
+
     loop = asyncio.get_running_loop()
     transport: "asyncio.BaseTransport"
     _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ServerProtocol(handler), local_addr=(host, port)
+        lambda: ServerProtocol(wrap_handler), local_addr=(host, port)
     )
     try:
         yield

@@ -57,8 +57,7 @@ async def test_no_send_data(data: bytes):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(strict=True)
 async def test_reverse_echo_works():
     async with aioudp.serve(host="localhost", port=9999, handler=reverse_echo_server):
         async with aioudp.connect("localhost", 9999) as connection:
-            await asyncio.wait_for(connection.recv(), timeout=0.01) == b"Hi"
+            await connection.recv() == b"Hi"

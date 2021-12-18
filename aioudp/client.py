@@ -46,6 +46,7 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
         lambda: ClientProtocol(msgs), remote_addr=(host, port)
     )
     try:
+        transport.sendto(b"trash")
         yield connection.Connection(  # TODO: REFACTOR: minimal args
             send_func=transport.sendto,  # type: ignore
             recv_func=msgs.get,
