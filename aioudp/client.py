@@ -45,13 +45,17 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     transport, _ = await loop.create_datagram_endpoint(
         lambda: ClientProtocol(msgs), remote_addr=(host, port)
     )
+    conn = connection.Connection(  # TODO: REFACTOR: minimal args
+        send_func=transport.sendto,  # type: ignore
+        recv_func=msgs.get,
+        is_closing=transport.is_closing,
+        get_local_addr=functools.partial(transport.get_extra_info, "sockname"),
+        get_remote_addr=functools.partial(transport.get_extra_info, "peername"),
+    )
     try:
-        yield connection.Connection(  # TODO: REFACTOR: minimal args
-            send_func=transport.sendto,  # type: ignore
-            recv_func=msgs.get,
-            is_closing=transport.is_closing,
-            get_local_addr=functools.partial(transport.get_extra_info, "sockname"),
-            get_remote_addr=functools.partial(transport.get_extra_info, "peername"),
-        )
+        # This is to make sure that the connection works
+        # See https://github.com/ThatXliner/aioudp/pull/3 for more information
+        await conn.send(b"trash")
+        yield conn
     finally:
         transport.close()
