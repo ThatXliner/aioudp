@@ -8,4 +8,4 @@ from .server import serve
 __all__ = ["connect", "serve", "Connection", "exceptions"]
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
