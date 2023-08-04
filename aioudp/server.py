@@ -15,7 +15,8 @@ class ServerProtocol(asyncio.DatagramProtocol):
     )
     transport: Optional[asyncio.DatagramTransport] = None
 
-    def connection_made(self, transport: "asyncio.DatagramTransport") -> None:  # type: ignore
+    def connection_made(self, transport: "asyncio.BaseTransport") -> None:
+        assert isinstance(transport, asyncio.DatagramTransport)
         self.transport = transport
 
     def datagram_received(self, data: bytes, addr: connection.AddrType) -> None:
@@ -23,7 +24,7 @@ class ServerProtocol(asyncio.DatagramProtocol):
             self.msg_handler[addr] = asyncio.Queue()
             assert self.transport is not None
             asyncio.create_task(
-                self.handler(  # type: ignore  # See connnection.py
+                self.handler(  # type: ignore[arg-type]  # See connnection.py
                     connection.Connection(  # TODO: REFACTOR: minimal args
                         send_func=functools.partial(self.transport.sendto, addr=addr),
                         recv_func=self.msg_handler[addr].get,

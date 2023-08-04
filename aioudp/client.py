@@ -52,7 +52,7 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
         remote_addr=(host, port),
     )
     conn = connection.Connection(  # TODO: REFACTOR: minimal args
-        send_func=transport.sendto,  # type: ignore
+        send_func=transport.sendto,
         recv_func=msgs.get,
         is_closing=transport.is_closing,
         get_local_addr=functools.partial(transport.get_extra_info, "sockname"),
