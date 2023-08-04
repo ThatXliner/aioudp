@@ -1,4 +1,3 @@
-
 name: CI
 on:
   - push
@@ -8,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -70,4 +69,3 @@ jobs:
           poetry install
       - name: Lint codebase
         run: poe lint
-
