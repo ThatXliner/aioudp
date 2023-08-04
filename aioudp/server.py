@@ -11,7 +11,7 @@ from aioudp import connection
 class ServerProtocol(asyncio.DatagramProtocol):
     handler: Callable[[connection.Connection], Awaitable[None]]
     msg_handler: Dict[connection.AddrType, "asyncio.Queue[Optional[bytes]]"] = field(
-        default_factory=dict
+        default_factory=dict,
     )
     transport: Optional[asyncio.DatagramTransport] = None
 
@@ -29,11 +29,12 @@ class ServerProtocol(asyncio.DatagramProtocol):
                         recv_func=self.msg_handler[addr].get,
                         is_closing=self.transport.is_closing,
                         get_local_addr=functools.partial(
-                            self.transport.get_extra_info, "sockname"
+                            self.transport.get_extra_info,
+                            "sockname",
                         ),
                         get_remote_addr=lambda: addr,
-                    )
-                )
+                    ),
+                ),
             ).add_done_callback(lambda _: self.msg_handler.pop(addr, None))
         self.msg_handler[addr].put_nowait(data)
 
@@ -51,7 +52,9 @@ class ServerProtocol(asyncio.DatagramProtocol):
 
 @asynccontextmanager
 async def serve(
-    host: str, port: int, handler: Callable[[connection.Connection], Awaitable[None]]
+    host: str,
+    port: int,
+    handler: Callable[[connection.Connection], Awaitable[None]],
 ) -> AsyncIterator[None]:
     """Runs a UDP server.
 
@@ -71,12 +74,12 @@ async def serve(
             and doesn't need to return anything.
 
     """
-
     loop = asyncio.get_running_loop()
     transport: "asyncio.BaseTransport"
     _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ServerProtocol(handler), local_addr=(host, port)
+        lambda: ServerProtocol(handler),
+        local_addr=(host, port),
     )
     try:
         yield

@@ -1,3 +1,4 @@
+"""Code related both client-side or server-side connections."""
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Optional, Tuple
 
@@ -21,7 +22,7 @@ class Connection:  # TODO: REFACTOR: minimal args
 
     @property
     def local_address(self) -> AddrType:
-        """Returns the local address of the connection. This is your IP
+        """Returns the local address of the connection. This is your IP.
 
         .. seealso::
             :meth:`remote_address`
@@ -34,7 +35,7 @@ class Connection:  # TODO: REFACTOR: minimal args
 
     @property
     def remote_address(self) -> Optional[AddrType]:
-        """Returns the remote address of the connection. This is their IP
+        """Returns the remote address of the connection. This is their IP.
 
         .. seealso::
             :meth:`local_address`
@@ -46,7 +47,7 @@ class Connection:  # TODO: REFACTOR: minimal args
         return self.get_remote_addr()  # type: ignore  # See above
 
     async def recv(self) -> bytes:
-        """Receives a message from the connection
+        """Receives a message from the connection.
 
         Returns:
             bytes: The received `bytes`.

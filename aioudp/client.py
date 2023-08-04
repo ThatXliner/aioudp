@@ -1,3 +1,4 @@
+"""Code related to client-side connections."""
 import asyncio
 import functools
 from contextlib import asynccontextmanager
@@ -8,7 +9,7 @@ from aioudp import connection
 
 
 @dataclass
-class ClientProtocol(asyncio.DatagramProtocol):
+class _ClientProtocol(asyncio.DatagramProtocol):
     msg_queue: "asyncio.Queue[Optional[bytes]]"
 
     def datagram_received(self, data: bytes, _: connection.AddrType) -> None:
@@ -27,7 +28,7 @@ class ClientProtocol(asyncio.DatagramProtocol):
 
 @asynccontextmanager
 async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
-    """Connects to a UDP server.
+    """Connect to a UDP server.
 
     .. seealso::
 
@@ -47,7 +48,8 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     transport: "asyncio.BaseTransport"
     _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ClientProtocol(msgs), remote_addr=(host, port)
+        lambda: _ClientProtocol(msgs),
+        remote_addr=(host, port),
     )
     conn = connection.Connection(  # TODO: REFACTOR: minimal args
         send_func=transport.sendto,  # type: ignore

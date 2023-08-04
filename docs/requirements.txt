@@ -1,2 +1,4 @@
 Sphinx
 aioudp
+sphinxcontrib_trio
+sphinx-book-theme
