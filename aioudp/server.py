@@ -1,3 +1,4 @@
+"""Code related to server-side connections."""
 import asyncio
 import functools
 from contextlib import asynccontextmanager
@@ -6,10 +7,12 @@ from typing import AsyncIterator, Awaitable, Callable, Dict, NoReturn, Optional
 
 from aioudp import connection
 
+AsyncConnectionHandlerType = Callable[[connection.Connection], Awaitable[None]]
+
 
 @dataclass
-class ServerProtocol(asyncio.DatagramProtocol):
-    handler: Callable[[connection.Connection], Awaitable[None]]
+class _ServerProtocol(asyncio.DatagramProtocol):
+    handler: AsyncConnectionHandlerType
     msg_handler: Dict[connection.AddrType, "asyncio.Queue[Optional[bytes]]"] = field(
         default_factory=dict,
     )
@@ -70,7 +73,7 @@ async def serve(
     Args:
         host (str): The host name/address to run the server on
         port (int): The port number to run the server on
-        handler (Callable[[connection.Connection], Awaitable[None]]): An asynchronous function to handle a request
+        handler (AsyncConnectionHandlerType): An async connection handler
             It should accept an instance of :class:`connection.Connection`
             and doesn't need to return anything.
 
@@ -79,7 +82,7 @@ async def serve(
     transport: "asyncio.BaseTransport"
     _: "asyncio.BaseProtocol"
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ServerProtocol(handler),
+        lambda: _ServerProtocol(handler),
         local_addr=(host, port),
     )
     try:

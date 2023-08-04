@@ -1,8 +1,6 @@
 Frequently Asked Questions
 ==========================
 
-Common questions you may have
-
 .. _faq-why-bytes:
 
 Why do the messages need to be in bytes?
@@ -10,7 +8,7 @@ Why do the messages need to be in bytes?
 
 Because it makes sense. UDP is unreliable but fast, making it a good choice for streaming audio/video.
 
-If you're trying to send strings, you're probably misusing this library.
+If you're trying to send strings (e.g. JSON or text messages), you're probably misusing this library.
 I recommend a good TCP (to be precise, `WebSockets <https://en.wikipedia.org/wiki/WebSocket>`_)
 `library called websockets <https://websockets.readthedocs.io/en/stable/>`_.
 It has a similar API to this library. In fact, this library's API was inspired by the websockets library.
@@ -20,17 +18,17 @@ It has a similar API to this library. In fact, this library's API was inspired b
 Why is my code hanging?
 -----------------------
 
-If your code is trying to ``.recv()`` something on the client side but
-that is hanging, the following may be the case:
+If your code is trying to call :meth:`Connection.recv() <aioudp.Connection.recv>` something on the client side but
+it is hanging, the following may be the case:
 
- - The server didn't send anything to the client
- - An exception happened in the server.
+- The server didn't send anything to the client
+- An exception happened in the server.
 
 Because these scenarios can happen, you should :ref:`add a timeout <faq-add-timeout>`.
 
 .. _faq-hang:
 
-Otherwise, there's a chance that you've been trying to immediately ``.recv()`` upon
+Otherwise, there's a chance that you've been trying to immediately :meth:`~aioudp.Connection.recv` upon
 connecting on the client-side. For example this code hangs:
 
 .. code-block:: python

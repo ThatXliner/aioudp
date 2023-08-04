@@ -8,5 +8,5 @@ class AioUDPError(Exception):
     """
 
 
-class ConnectionClosedError(AioUDPError):
+class ConnectionClosedError(AioUDPError, ConnectionError):
     """When a connection is closed and you tried to send/recieve a message."""

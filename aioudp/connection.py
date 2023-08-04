@@ -22,34 +22,39 @@ class Connection:  # TODO: REFACTOR: minimal args
 
     @property
     def local_address(self) -> AddrType:
-        """Returns the local address of the connection. This is your IP.
+        """The local address and port of the connection.
+
+        The address should your local IP address (within the LAN).
 
         .. seealso::
-            :meth:`remote_address`
+            :attr:`remote_address`
 
         Returns:
-            AddrType: This is a `tuple` containing the hostname and port
+            Tuple[str, int]: This is a `tuple` containing the hostname and port
 
         """
-        return (
-            self.get_local_addr()
-        )  # This is a bug https://github.com/python/mypy/issues/6910
+        return self.get_local_addr()
 
     @property
     def remote_address(self) -> Optional[AddrType]:
-        """Returns the remote address of the connection. This is their IP.
+        """The remote address and port of the connection.
+
+        The address should be their IP, which
+        should be their router's public server address.
 
         .. seealso::
-            :meth:`local_address`
+            :attr:`local_address`
 
         Returns:
-            AddrType: This is a `tuple` containing the hostname and port
+            Tuple[str, int]: This is a `tuple` containing the hostname and port
 
         """
-        return self.get_remote_addr()  # See above
+        return self.get_remote_addr()
 
     async def recv(self) -> bytes:
-        """Receives a message from the connection.
+        """Receive a message from the connection.
+
+        It is named this way since ``recv`` is a shorthand for "receive".
 
         Returns:
             bytes: The received `bytes`.
@@ -58,10 +63,11 @@ class Connection:  # TODO: REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
 
         """
-        the_next_one = await self.recv_func()  # See above
+        the_next_one = await self.recv_func()
         if the_next_one is None:
-            assert self.is_closing()  # See above
-            raise exceptions.ConnectionClosedError("The connection is closed")
+            assert self.is_closing()
+            msg = "The connection is closed"
+            raise exceptions.ConnectionClosedError(msg)
         return the_next_one
 
     async def send(self, data: bytes) -> None:
@@ -78,15 +84,23 @@ class Connection:  # TODO: REFACTOR: minimal args
             ValueError: There is no data to send
         """
         if self.is_closing():  # See above
-            raise exceptions.ConnectionClosedError("The connection is closed")
+            msg = "The connection is closed"
+            raise exceptions.ConnectionClosedError(msg)
         if not data:
-            raise ValueError("You must send some data")
+            msg = "You must send some data"
+            raise ValueError(msg)
         self.send_func(data)  # See above
 
     def __aiter__(self) -> "Connection":
+        """Returns itself since it also implements __anext__."""
         return self
 
     async def __anext__(self) -> bytes:
+        """Receive messages in this connection.
+
+        Iterating through a connection is the same
+        as calling :meth:`recv` in a loop.
+        """
         try:
             return await self.recv()
         except exceptions.ConnectionClosedError as error:

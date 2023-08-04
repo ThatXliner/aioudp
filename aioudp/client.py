@@ -35,8 +35,8 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
         :func:`serve`
 
     .. versionchanged:: 1.0
-        Immediate ``.recv()`` on client-side connection will now hang.
-        See :ref:`faq-hang`.
+        Immediate :meth:`Connection.recv()` on client-side connection will now hang.
+        See the `FAQ <faq.html#faq-hang>`_.
 
     Args:
         host (str): The server's host name/address

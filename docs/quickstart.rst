@@ -11,12 +11,12 @@ Install this library via pip:
     $ pip install aioudp
 
 Example Usage
------
+-------------
 
-Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pyaudio/>`_:
+Here's a simple `PA system <https://en.wikipedia.org/wiki/Public_address_system>`_ with `PyAudio <https://people.csail.mit.edu/hubert/pyaudio/>`_:
 
 .. code-block:: python
-    :title: Server code (speaker)
+    :caption: Server code (speaker)
 
     import asyncio
     import signal
@@ -84,7 +84,7 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
         asyncio.run(main())
 
 .. code-block:: python
-    :title: User code (microphone)
+    :caption: User code (microphone)
 
     import asyncio
 
