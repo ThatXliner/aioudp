@@ -35,9 +35,10 @@ connecting on the client-side. For example this code hangs:
 
 .. code-block:: python
     :caption: Client code
-    :emphasize-lines: 7
+    :emphasize-lines: 8
 
     import asyncio
+
     import aioudp
 
 
@@ -45,23 +46,27 @@ connecting on the client-side. For example this code hangs:
         async with aioudp.connect("localhost", 9999) as connection:
             assert await connection.recv() == b"Hello world!"
 
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         asyncio.run(main())
 
 .. code-block:: python
     :caption: Server code
 
     import asyncio
+
     import aioudp
 
 
     async def main():
         async def handler(connection):
             await connection.send(b"Hello world!")
+
         async with aioudp.serve("localhost", 9999, handler):
             await asyncio.Future()
 
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         asyncio.run(main())
 
 Because the client code is trying to receive the message immediately upon connection.
@@ -72,9 +77,10 @@ If you really need to do so, a workaround is implementing an initial "trash" mes
 
 .. code-block:: python
     :caption: Client code
-    :emphasize-lines: 7
+    :emphasize-lines: 8
 
     import asyncio
+
     import aioudp
 
 
@@ -83,14 +89,16 @@ If you really need to do so, a workaround is implementing an initial "trash" mes
             await connection.send(b"TRASH")
             assert await connection.recv() == b"Hello world!"
 
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         asyncio.run(main())
 
 .. code-block:: python
     :caption: Server code
-    :emphasize-lines: 7
+    :emphasize-lines: 8
 
     import asyncio
+
     import aioudp
 
 
@@ -98,10 +106,12 @@ If you really need to do so, a workaround is implementing an initial "trash" mes
         async def handler(connection):
             await connection.recv()
             await connection.send(b"Hello world!")
+
         async with aioudp.serve("localhost", 9999, handler):
             await asyncio.Future()
 
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         asyncio.run(main())
 
 .. note::
@@ -125,7 +135,7 @@ Example:
     try:
         await asyncio.wait_for(func(), timeout=0.01)
     except asyncio.TimeoutError:
-        print('timeout!')
+        print("timeout!")
 
 Where ``func`` is the function you want to add a timeout to.
 
