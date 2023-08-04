@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "aioudp"
 description = "A better API for asynchronous UDP"
-authors = ["Bryan Hu <bryan.hu.2020@gmail.com>"]
-version = "1.0.0"
+authors = ["Bryan Hu <thatxliner@gmail.com>"]
+version = "0.1.0"
 
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -10,60 +10,85 @@ license = "GPL-3.0-or-later"
 classifiers = [
     # Get the list of trove classifiers here: https://pypi.org/classifiers/
     "Programming Language :: Python :: Implementation :: CPython",
+    "Typing :: Typed",
     "Operating System :: OS Independent",
-    "Development Status :: 5 - Stable",
+    "Development Status :: 4 - Beta",
     "Natural Language :: English",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
 documentation = "https://aioudp.readthedocs.io/en/latest/index.html"
 homepage = "https://github.com/ThatXliner/aioudp"
-keywords = ["udp", "asyncio"]  # Maximum of 5 keywords
+# keywords = ["awesome", "project"]  # Maximum of 5 keywords
 
 [tool.poetry.dependencies]
-python = "^3.7"
-
-[tool.poetry.dev-dependencies]
-black = "^21.5b0"
-isort = "^5.8.0"
-pylint = "^2.8.2"
-
-toml = "^0.10.2"
-hypothesis = "^6.12.0"
-pytest-cov = "^2.11.1"
-pytest-asyncio = "^0.16.0"
-
-Sphinx = "^4.0.0"
-sphinxcontrib-trio = "^1.1.2"  # For documenting "async with", etc
-sphinx-book-theme = "^0.1.7"
+python = "^3.8"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.4.1"
-pytest = "^7.4.0"
+black = "^23.1.0"
+hypothesis = "^6.68.2"
+mypy = "^1.0.1"
+pytest = "^7.2.1"
+pytest-clarity = "^1.0.1"
+pytest-cov = "^4.0.0"
+ruff = "^0.0.249"
+shed = "^0.10.9"
+
+Sphinx = "^6.1.3"
+toml = "^0.10.2"
+pytest-asyncio = "^0.21.1"
 
 [tool.poe.tasks]
-docs = {cmd = "sphinx-build docs build", help = "Build documentation"}
-
-# Code formatting
-black = {cmd = "black .", help = "Run black on codebase"}
-isort = {cmd = "isort . --profile=black", help = "Run isort on codebase"}
-format = ["black", "isort"]
-
 # Code linting
-mypy = {cmd = "mypy aioudp --strict", help = "Run MyPy on codebase"}
-pylint = {cmd = "pylint aioudp --fail-under=8", help = "Run Pylint on codebase"}
+mypy   = {cmd = "mypy aioudp --strict", help = "Run MyPy on codebase"}
+ruff = {cmd = "ruff check aioudp", help = "Run Ruff on codebase"}
 check_black = {cmd = "black aioudp --check"}
-check_isort = {cmd = "isort aioudp --check --profile=black"}
+check_imports = {cmd = "ruff check aioudp --select I"}
+style    = ["check_black", "check_imports"]
+codebase = ["ruff", "mypy"]
+    [tool.poe.tasks.docs]
+    cmd = "sphinx-build docs build"
+    help = "Build documentation"
 
-# Combining the 2
-style = ["check_black", "check_isort"]
-codebase = ["pylint", "mypy"]
+    [tool.poe.tasks.format]
+    cmd = "shed"
+    help = "Format code"
 
-lint = ["style", "codebase"]
+    [tool.poe.tasks.fix-ruff]
+    cmd = "ruff aioudp --fix"
+    help = "Ruff autofix"
 
-test = {cmd = "pytest -vvv", help = "Run test suite"}
-ci = {cmd = "pytest -vvv --cov=aioudp --cov-report=xml", help = "Run test suite with codecoverage (XML format)"}
-dev = {cmd = "pytest -vvv --cov=aioudp --cov-report=html", help = "Run test suite for developers"}
+    [tool.poe.tasks.lint]
+    sequence = ["style", "codebase"]
+    help = "Lint codebase"
 
-clean = "rm -rf build .pytest_cache/ .hypothesis .coverage htmlcov"
+    [tool.poe.tasks.test]
+    cmd = "pytest -vvv --cov=aioudp"
+    help = "Simply run test suite"
+
+    [tool.poe.tasks.ci]
+    cmd = "pytest -vvv --cov=aioudp --cov-report=xml"
+    help = "This workflow is for Github Actions"
+
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+# Same as Black.
+line-length = 88
+select = ["ALL"]
+ignore = [
+    # "D",    # "No docs"
+    "T20",  # "Don't use print or pprint"
+    # "ANN",  # Type annotation errors (or the lack of it)
+    "FBT",  # I actually don't know why this exists
+            # and it seems useless so ignore it
+    # Fix doc rule conflicts
+    "D203",
+    "D213"
+]
+target-version = "py38"
+[tool.ruff.per-file-ignores]
+"tests/**/*.py" = ["S101", "D"]
+"docs/conf.py" = ["INP001", "A001"]

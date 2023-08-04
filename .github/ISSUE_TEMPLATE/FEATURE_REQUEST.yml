@@ -6,12 +6,12 @@ body:
   - type: checkboxes
     id: generic-feature-request-checklist
     attributes:
-      label: Prerequisites 
+      label: Prerequisites
       description: "Before you start, make sure you have done all of the following:"
       options:
         - label: I have searched the [issues](https://github.com/ThatXliner/aioudp/issues) and believe that it has not already been requested (and possibly rejected)
           required: true
-        - label: I have made sure that this feature isn't possible with this project's plugin system and/or configuration and core changes must be made to make this happen
+        - label: I have made sure that this feature isn't possible with this project's plugin system and/or configuration; core changes must be made to make this happen.
           required: true
         - label: "I agree to follow the [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/)"
           required: true

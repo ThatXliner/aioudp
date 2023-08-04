@@ -3,6 +3,8 @@ Welcome to AioUDP's documentation!
 
 .. toctree::
     :titlesonly:
+    :maxdepth: 2
+    :caption: Contents:
 
     quickstart
     faq
