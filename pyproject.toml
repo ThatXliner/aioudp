@@ -2,7 +2,7 @@
 name = "aioudp"
 description = "A better API for asynchronous UDP"
 authors = ["Bryan Hu <bryan.hu.2020@gmail.com>"]
-version = "0.1.1"
+version = "1.0.0"
 
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -11,7 +11,7 @@ classifiers = [
     # Get the list of trove classifiers here: https://pypi.org/classifiers/
     "Programming Language :: Python :: Implementation :: CPython",
     "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Stable",
     "Natural Language :: English",
 ]
 documentation = "https://aioudp.readthedocs.io/en/latest/index.html"
