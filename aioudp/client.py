@@ -33,6 +33,10 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
 
         :func:`serve`
 
+    .. versionchanged:: 1.0
+        Immediate ``.recv()`` on client-side connection will now hang.
+        See :ref:`faq-hang`.
+
     Args:
         host (str): The server's host name/address
         port (int): The server's port number
@@ -53,9 +57,6 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
         get_remote_addr=functools.partial(transport.get_extra_info, "peername"),
     )
     try:
-        # This is to make sure that the connection works
-        # See https://github.com/ThatXliner/aioudp/pull/3 for more information
-        await conn.send(b"trash")
         yield conn
     finally:
         transport.close()
