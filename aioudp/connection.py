@@ -24,7 +24,7 @@ class Connection:  # TODO: REFACTOR: minimal args
     def local_address(self) -> AddrType:
         """The local address and port of the connection.
 
-        The address should your local IP address (within the LAN).
+        The address should be your local IP address (within the LAN).
 
         .. seealso::
             :attr:`remote_address`
@@ -37,10 +37,9 @@ class Connection:  # TODO: REFACTOR: minimal args
 
     @property
     def remote_address(self) -> Optional[AddrType]:
-        """The remote address and port of the connection.
+        """The remote address and port of your peer.
 
-        The address should be their IP, which
-        should be their router's public server address.
+        The address should be the peer's public IP address.
 
         .. seealso::
             :attr:`local_address`
@@ -52,7 +51,7 @@ class Connection:  # TODO: REFACTOR: minimal args
         return self.get_remote_addr()
 
     async def recv(self) -> bytes:
-        """Receive a message from the connection.
+        """Receive a message from your peer.
 
         It is named this way since ``recv`` is a shorthand for "receive".
 
@@ -71,7 +70,7 @@ class Connection:  # TODO: REFACTOR: minimal args
         return the_next_one
 
     async def send(self, data: bytes) -> None:
-        """Sends a message to the connection.
+        """Sends a message to your peer.
 
         .. warning::
             Since this is UDP, there is no guarantee that the message will be sent
