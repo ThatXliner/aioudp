@@ -2,7 +2,7 @@
 name = "aioudp"
 description = "A better API for asynchronous UDP"
 authors = ["Bryan Hu <thatxliner@gmail.com>"]
-version = "0.1.0"
+version = "1.0.0"
 
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -12,7 +12,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Typing :: Typed",
     "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Stable",
     "Natural Language :: English",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
