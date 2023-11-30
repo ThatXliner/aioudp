@@ -2,7 +2,7 @@
 name = "aioudp"
 description = "A better API for asynchronous UDP"
 authors = ["Bryan Hu <bryan.hu.2020@gmail.com>"]
-version = "0.1.1"
+version = "1.0.0"
 
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -11,7 +11,7 @@ classifiers = [
     # Get the list of trove classifiers here: https://pypi.org/classifiers/
     "Programming Language :: Python :: Implementation :: CPython",
     "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Natural Language :: English",
 ]
 documentation = "https://aioudp.readthedocs.io/en/latest/index.html"
@@ -19,10 +19,9 @@ homepage = "https://github.com/ThatXliner/aioudp"
 keywords = ["udp", "asyncio"]  # Maximum of 5 keywords
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 [tool.poetry.dev-dependencies]
-black = "^21.5b0"
 isort = "^5.8.0"
 pylint = "^2.8.2"
 
@@ -38,6 +37,7 @@ sphinx-book-theme = "^0.1.7"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4.1"
 pytest = "^7.4.0"
+black = "^23.11.0"
 
 [tool.poe.tasks]
 docs = {cmd = "sphinx-build docs build", help = "Build documentation"}
