@@ -20,7 +20,10 @@ from aioudp import connection
 @dataclass
 class _ServerProtocol(asyncio.DatagramProtocol):
     handler: Callable[[connection.Connection], Coroutine[Never, Never, None]]
-    msg_handler: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
+    msg_queues: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
+        default_factory=dict,
+    )
+    msg_handlers: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
         default_factory=dict,
     )
     transport: None | asyncio.transports.DatagramTransport = None
@@ -35,14 +38,20 @@ class _ServerProtocol(asyncio.DatagramProtocol):
 
     def datagram_received(self, data: bytes, addr: connection.AddrType) -> None:
         if addr not in self.msg_handler:
-            self.msg_handler[addr] = asyncio.Queue()
+            self.msg_queues[addr] = asyncio.Queue()
             assert self.transport is not None
-            asyncio.create_task(
+
+            def done(_):
+                self.msg_queues.pop(addr, None)
+                self.msg_queues.pop(addr, None)
+
+            # Strong reference is needed
+            self.msg_handlers[addr] = asyncio.create_task(
                 self.handler(  # See connnection.py
                     connection.Connection(  # TODO(ThatXliner): REFACTOR: minimal args
                         # https://github.com/ThatXliner/aioudp/issues/15
                         send_func=functools.partial(self.transport.sendto, addr=addr),
-                        recv_func=self.msg_handler[addr].get,
+                        recv_func=self.msg_queues[addr].get,
                         is_closing=self.transport.is_closing,
                         get_local_addr=functools.partial(
                             self.transport.get_extra_info,
@@ -51,8 +60,8 @@ class _ServerProtocol(asyncio.DatagramProtocol):
                         get_remote_addr=lambda: addr,
                     ),
                 ),
-            ).add_done_callback(lambda _: self.msg_handler.pop(addr, None))
-        self.msg_handler[addr].put_nowait(data)
+            ).add_done_callback(done)
+        self.msg_queues[addr].put_nowait(data)
 
     def error_received(self, exc: Exception) -> NoReturn:
         # Haven't figured out why this can happen
