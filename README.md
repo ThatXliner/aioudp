@@ -1,6 +1,16 @@
 # AioUDP
 
-[![Documentation Status](https://readthedocs.org/projects/aioudp/badge/?version=latest)](https://aioudp.readthedocs.io/en/latest/?badge=latest) [![codecov](https://codecov.io/gh/ThatXliner/aioudp/branch/main/graph/badge.svg?token=xZ7HVG8Owm)](https://codecov.io/gh/ThatXliner/aioudp) [![CI](https://github.com/ThatXliner/aioudp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ThatXliner/aioudp/actions/workflows/ci.yml)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![codecov](https://codecov.io/gh/ThatXliner/aioudp/branch/main/graph/badge.svg)](https://codecov.io/gh/ThatXliner/aioudp)
+
+[![CI](https://github.com/ThatXliner/aioudp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ThatXliner/aioudp/actions/workflows/ci.yml)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aioudp)](https://pypi.org/project/aioudp)
+[![PyPI](https://img.shields.io/pypi/v/aioudp)](https://pypi.org/project/aioudp)
+[![PyPI - License](https://img.shields.io/pypi/l/aioudp)](#license)
 
 > A better API for asynchronous UDP
 
@@ -52,7 +62,23 @@ if __name__ == '__main__':
     asyncio.run(main())
 ```
 
-NOTE: This library provides no other abstractions over the existing UDP interface in `asyncio` other than the `async`/`await`-based API. This means there is no implicit protocol handled in this library such a [QUIC](https://en.wikipedia.org/wiki/QUIC). You must write your own, or find another library.
+## Installation
+
+You can get this project via `pip`
+
+```bash
+$ pip install aioudp
+```
+
+
+Or, if you're using [Poetry](https://python-poetry.org)
+
+```bash
+$ poetry add aioudp
+```
+
+> [!NOTE]
+> This library provides no other abstractions over the existing UDP interface in `asyncio` other than the `async`/`await`-based API. This means there is no implicit protocol handled in this library such a [QUIC](https://en.wikipedia.org/wiki/QUIC). You must write your own, or find another library.
 
 ## See also
 
@@ -60,3 +86,15 @@ NOTE: This library provides no other abstractions over the existing UDP interfac
 - [WebSockets](https://websockets.readthedocs.io/en/stable/), a library for Python to interact with WebSockets. Its API heavily inspired the design of AioUDP.
 - [QUIC](https://en.wikipedia.org/wiki/QUIC), a faster protocol similar to TCP, built on UDP.
 - [AioQUIC](https://github.com/aiortc/aioquic), the Python implementation of QUIC.
+
+
+
+## License
+
+Copyright © 2021, Bryan Hu
+
+This project is licensed under the [GNU GPL v3+](https://github.com/ThatXliner/aioudp/blob/main/LICENSE.txt).
+
+In short, this means you can do anything with it (distribute, modify, sell) but if you were to publish your changes, you must make the source code and build instructions readily available.
+
+If you are a company using this project and want an exception, email me at [thatxliner@gmail.com](mailto:thatxliner@gmail.com) and we can discuss.

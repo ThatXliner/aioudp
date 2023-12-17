@@ -10,36 +10,27 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('.'))
 
-sys.path.insert(0, os.path.abspath(".."))
-from aioudp import __version__
 
 # -- Project information -----------------------------------------------------
+from aioudp import __version__
 
 project = "AioUDP"
-copyright = "2021, Bryan Hu"
+copyright = "2022, Bryan Hu"
 author = "Bryan Hu"
 
 # The full version, including alpha/beta/rc tags
 release = __version__
-
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.todo",
-    "sphinxcontrib_trio",
-]
-
-# Extension `sphinx.ext.todo`'s configuration
-todo_emit_warnings = True
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = []
@@ -55,7 +46,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "alabaster"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -9,3 +9,4 @@ htmlcov/
 dist/
 build/
 .coverage*
+coverage.xml

@@ -1,0 +1,12 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v1.2.2
+_src_path: gh:ThatXliner/pyt2
+add_docs: true
+author: Bryan Hu
+email: thatxliner@gmail.com
+is_app: false
+module_name: aioudp
+project_description: A better API for asynchronous UDP
+project_name: AioUDP
+pypi_name: aioudp
+username: ThatXliner
