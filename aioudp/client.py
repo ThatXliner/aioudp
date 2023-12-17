@@ -27,26 +27,31 @@ class ClientProtocol(asyncio.DatagramProtocol):
 
 @asynccontextmanager
 async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
-    """Connects to a UDP server.
+    """Connect to a UDP server.
 
-    .. seealso::
-
+    See Also
+    --------
         :func:`serve`
 
     Args:
-        host (str): The server's host name/address
-        port (int): The server's port number
+        host (str): The server's host name/address.
+        port (int): The server's port number.
+
+    Returns
+    -------
+        An asynchronous iterator yielding a connection to the UDP server.
 
     """
     loop = asyncio.get_running_loop()
     msgs: "asyncio.Queue[Optional[bytes]]" = asyncio.Queue()
-    transport: "asyncio.BaseTransport"
-    _: "asyncio.BaseProtocol"
+    transport: asyncio.DatagramTransport
+    _: ClientProtocol
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ClientProtocol(msgs), remote_addr=(host, port)
+        lambda: ClientProtocol(msgs),
+        remote_addr=(host, port),
     )
     conn = connection.Connection(  # TODO: REFACTOR: minimal args
-        send_func=transport.sendto,  # type: ignore
+        send_func=transport.sendto,
         recv_func=msgs.get,
         is_closing=transport.is_closing,
         get_local_addr=functools.partial(transport.get_extra_info, "sockname"),

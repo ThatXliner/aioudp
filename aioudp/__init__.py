@@ -1,4 +1,4 @@
-"""A better API for asynchronous UDP"""
+"""A better API for asynchronous UDP."""
 
 from . import exceptions
 from .client import connect

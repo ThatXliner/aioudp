@@ -39,6 +39,6 @@ Example:
     try:
         await asyncio.wait_for(func(), timeout=0.01)
     except asyncio.TimeoutError:
-        print('timeout!')
+        print("timeout!")
 
 Where ``func`` is the function you want to add a timeout to.

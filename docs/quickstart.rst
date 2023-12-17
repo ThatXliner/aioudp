@@ -20,8 +20,10 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
 
     import asyncio
     import signal
-    import aioudp
+
     import pyaudio
+
+    import aioudp
 
     # Doesn't have to be "\x00" and "\x01". Any unique value would do
     ACCEPT = b"\x00"
@@ -85,8 +87,10 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
     :title: User code (microphone)
 
     import asyncio
-    import aioudp
+
     import pyaudio
+
+    import aioudp
 
     DECLINE = b"\x01"
     TERMINATOR = b"DONE"

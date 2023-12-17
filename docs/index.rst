@@ -14,32 +14,39 @@ Here's an example of a simple UDP echo server serving at ``localhost`` at port `
 
 .. code-block:: python
 
-    import aioudp
     import asyncio
+
+    import aioudp
+
 
     async def main():
         async def handler(connection):
             async for message in connection:
                 await connection.send(message)
+
         async with aioudp.serve("localhost", 9999, handler):
             await asyncio.Future()  # Serve forever
 
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         asyncio.run(main())
 
 And the client that will send ``b"Hello world!"`` to the server:
 
 .. code-block:: python
 
-    import aioudp
     import asyncio
+
+    import aioudp
+
 
     async def main():
         async with aioudp.connect("localhost", 9999) as connection:
             await connection.send(b"Hello world!")
             assert await connection.recv() == b"Hello world!"
 
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         asyncio.run(main())
 
 .. seealso::

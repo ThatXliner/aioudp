@@ -77,8 +77,9 @@ build-backend = "poetry.core.masonry.api"
 line-length = 88
 select = ["ALL"]
 ignore = [
+    "S101", # "Use of assert detected. I use assert for MyPy
     # "D",    # "No docs"
-    "T20", # "Don't use print or pprint"
+    # "T20", # "Don't use print or pprint"
     # "ANN",  # Type annotation errors (or the lack of it)
     "ANN101", # The type annotation for `self` is inferred
     "FBT",    # I actually don't know why this exists

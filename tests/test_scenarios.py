@@ -1,9 +1,9 @@
+import asyncio
+
 import pytest
 from hypothesis import assume, given, strategies as st
 
 import aioudp
-from aioudp import exceptions
-import asyncio
 
 
 async def bad_server(connection: aioudp.Connection) -> None:

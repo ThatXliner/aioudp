@@ -21,48 +21,55 @@ class Connection:  # TODO: REFACTOR: minimal args
 
     @property
     def local_address(self) -> AddrType:
-        """Returns the local address of the connection. This is your IP
+        """Returns the local address of the connection. This is your IP.
 
         .. seealso::
             :meth:`remote_address`
 
-        Returns:
+        Returns
+        -------
             AddrType: This is a `tuple` containing the hostname and port
 
         """
-        return self.get_local_addr()  # type: ignore  # This is a bug https://github.com/python/mypy/issues/6910
+        return (
+            self.get_local_addr()
+        )  # This is a bug https://github.com/python/mypy/issues/6910
 
     @property
     def remote_address(self) -> Optional[AddrType]:
-        """Returns the remote address of the connection. This is their IP
+        """Returns the remote address of the connection. This is their IP.
 
         .. seealso::
             :meth:`local_address`
 
-        Returns:
+        Returns
+        -------
             AddrType: This is a `tuple` containing the hostname and port
 
         """
-        return self.get_remote_addr()  # type: ignore  # See above
+        return self.get_remote_addr()  # See above
 
     async def recv(self) -> bytes:
-        """Receives a message from the connection
+        """Receives a message from the connection.
 
-        Returns:
+        Returns
+        -------
             bytes: The received `bytes`.
 
-        Raises:
+        Raises
+        ------
             exceptions.ConnectionClosedError: The connection is closed
 
         """
-        the_next_one = await self.recv_func()  # type: ignore  # See above
+        the_next_one = await self.recv_func()  # See above
         if the_next_one is None:
-            assert self.is_closing()  # type: ignore  # See above
-            raise exceptions.ConnectionClosedError("The connection is closed")
+            assert self.is_closing()  # See above
+            msg = "The connection is closed"
+            raise exceptions.ConnectionClosedError(msg)
         return the_next_one
 
     async def send(self, data: bytes) -> None:
-        """Sends a message to the connection.
+        """Send a message to the connection.
 
         .. warning::
             Since this is UDP, there is no guarantee that the message will be sent
@@ -70,15 +77,18 @@ class Connection:  # TODO: REFACTOR: minimal args
         Args:
             data (bytes): The message in bytes to send
 
-        Raises:
+        Raises
+        ------
             exceptions.ConnectionClosedError: The connection is closed
             ValueError: There is no data to send
         """
-        if self.is_closing():  # type: ignore  # See above
-            raise exceptions.ConnectionClosedError("The connection is closed")
+        if self.is_closing():  # See above
+            msg = "The connection is closed"
+            raise exceptions.ConnectionClosedError(msg)
         if not data:
-            raise ValueError("You must send some data")
-        self.send_func(data)  # type: ignore  # See above
+            msg = "You must send some data"
+            raise ValueError(msg)
+        self.send_func(data)  # See above
 
     def __aiter__(self) -> "Connection":
         return self
