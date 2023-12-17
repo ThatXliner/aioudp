@@ -41,7 +41,7 @@ class _ServerProtocol(asyncio.DatagramProtocol):
             self.msg_queues[addr] = asyncio.Queue()
             assert self.transport is not None
 
-            def done(_):
+            def done(_) -> None:  # noqa: ANN001
                 self.msg_queues.pop(addr, None)
                 self.msg_queues.pop(addr, None)
 
