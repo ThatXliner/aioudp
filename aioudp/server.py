@@ -37,7 +37,7 @@ class _ServerProtocol(asyncio.DatagramProtocol):
         self.transport = transport
 
     def datagram_received(self, data: bytes, addr: connection.AddrType) -> None:
-        if addr not in self.msg_handler:
+        if addr not in self.msg_queues:
             self.msg_queues[addr] = asyncio.Queue()
             assert self.transport is not None
 
@@ -71,8 +71,8 @@ class _ServerProtocol(asyncio.DatagramProtocol):
         # Haven't figured out why this can happen
         if exc is not None:
             raise exc
-        for key in self.msg_handler:
-            self.msg_handler[key].put_nowait(None)
+        for key in self.msg_queues:
+            self.msg_queues[key].put_nowait(None)
 
 
 @asynccontextmanager
