@@ -78,16 +78,14 @@ $ poetry add aioudp
 ```
 
 > [!NOTE]
-> This library provides no other abstractions over the existing UDP interface in `asyncio` other than the `async`/`await`-based API. This means there is no implicit protocol handled in this library such a [QUIC](https://en.wikipedia.org/wiki/QUIC). You must write your own, or find another library.
+> This library provides no other abstractions over the existing UDP interface in `asyncio` other than the `async`/`await`-based API. This means there is no implicit protocol handled in this library such as [QUIC](https://en.wikipedia.org/wiki/QUIC). You must write your own, or find another library.
 
 ## See also
 
 - [AnyIO](https://anyio.readthedocs.io/en/stable/index.html), a broader asynchronous networking and concurrency library for abstracting over any `async` IO implementation. It has a [similar API](https://anyio.readthedocs.io/en/stable/networking.html#working-with-udp-sockets) (which I didn't know about before I wrote this library)
 - [WebSockets](https://websockets.readthedocs.io/en/stable/), a library for Python to interact with WebSockets. Its API heavily inspired the design of AioUDP.
 - [QUIC](https://en.wikipedia.org/wiki/QUIC), a faster protocol similar to TCP, built on UDP.
-- [AioQUIC](https://github.com/aiortc/aioquic), the Python implementation of QUIC.
-
-
+- [AioQUIC](https://github.com/aiortc/aioquic), a Python implementation of QUIC.
 
 ## License
 
