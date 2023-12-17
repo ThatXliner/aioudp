@@ -35,9 +35,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             AddrType: This is a `tuple` containing the hostname and port
 
         """
-        return (
-            self.get_local_addr()
-        )  # This is a bug https://github.com/python/mypy/issues/6910
+        return self.get_local_addr()
 
     @property
     def remote_address(self) -> None | AddrType:
@@ -51,7 +49,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             AddrType: This is a `tuple` containing the hostname and port
 
         """
-        return self.get_remote_addr()  # See above
+        return self.get_remote_addr()
 
     async def recv(self) -> bytes:
         """Receives a message from the connection.
@@ -65,9 +63,9 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
 
         """
-        the_next_one = await self.recv_func()  # See above
+        the_next_one = await self.recv_func()
         if the_next_one is None:
-            assert self.is_closing()  # See above
+            assert self.is_closing()
             msg = "The connection is closed"
             raise exceptions.ConnectionClosedError(msg)
         return the_next_one
@@ -87,13 +85,13 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
             ValueError: There is no data to send
         """
-        if self.is_closing():  # See above
+        if self.is_closing():
             msg = "The connection is closed"
             raise exceptions.ConnectionClosedError(msg)
         if not data:
             msg = "You must send some data"
             raise ValueError(msg)
-        self.send_func(data)  # See above
+        self.send_func(data)
 
     def __aiter__(self) -> Connection:
         """Return an async iterator of messages received."""
