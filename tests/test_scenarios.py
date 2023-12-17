@@ -34,7 +34,7 @@ async def test_bad_server(data: bytes):
         async with aioudp.connect("localhost", 9999) as connection:
             await connection.send(data)
             with pytest.raises(asyncio.TimeoutError):
-                await asyncio.wait_for(connection.recv(), timeout=5)
+                await asyncio.wait_for(connection.recv(), timeout=1)
 
 
 @given(data=st.binary())
@@ -45,7 +45,7 @@ async def test_no_send_data(data: bytes):
         async with aioudp.connect("localhost", 9999) as connection:
             await connection.send(data)
             with pytest.raises(asyncio.TimeoutError):
-                await asyncio.wait_for(connection.recv(), timeout=5)
+                await asyncio.wait_for(connection.recv(), timeout=1)
 
 
 @pytest.mark.asyncio
