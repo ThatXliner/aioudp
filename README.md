@@ -7,6 +7,7 @@
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![codecov](https://codecov.io/gh/ThatXliner/aioudp/branch/main/graph/badge.svg)](https://codecov.io/gh/ThatXliner/aioudp)
 
+[![Documentation Status](https://readthedocs.org/projects/aioudp/badge/?version=latest)](https://aioudp.readthedocs.io/en/latest/?badge=latest)
 [![CI](https://github.com/ThatXliner/aioudp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ThatXliner/aioudp/actions/workflows/ci.yml)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aioudp)](https://pypi.org/project/aioudp)
 [![PyPI](https://img.shields.io/pypi/v/aioudp)](https://pypi.org/project/aioudp)
