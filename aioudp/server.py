@@ -5,25 +5,27 @@ import asyncio
 import functools
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import (  # `Never` is introduced in 3.11 but aioudp supports 3.8+
+from typing import (
     AsyncIterator,
     Awaitable,
     Callable,
     Coroutine,
     NoReturn,
 )
-from typing import NoReturn as Never
 
 from aioudp import connection
 
 
 @dataclass
 class _ServerProtocol(asyncio.DatagramProtocol):
-    handler: Callable[[connection.Connection], Coroutine[Never, Never, None]]
+    handler: Callable[[connection.Connection], Coroutine[NoReturn, NoReturn, None]]
     msg_queues: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
         default_factory=dict,
     )
-    msg_handlers: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
+    msg_handlers: dict[
+        connection.AddrType,
+        asyncio.Task[None],
+    ] = field(
         default_factory=dict,
     )
     transport: None | asyncio.transports.DatagramTransport = None
@@ -41,7 +43,7 @@ class _ServerProtocol(asyncio.DatagramProtocol):
             self.msg_queues[addr] = asyncio.Queue()
             assert self.transport is not None
 
-            def done(_) -> None:  # noqa: ANN001
+            def done(_) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN001
                 self.msg_queues.pop(addr, None)
                 self.msg_queues.pop(addr, None)
 
@@ -60,7 +62,8 @@ class _ServerProtocol(asyncio.DatagramProtocol):
                         get_remote_addr=lambda: addr,
                     ),
                 ),
-            ).add_done_callback(done)
+            )
+            self.msg_handlers[addr].add_done_callback(done)
         self.msg_queues[addr].put_nowait(data)
 
     def error_received(self, exc: Exception) -> NoReturn:
