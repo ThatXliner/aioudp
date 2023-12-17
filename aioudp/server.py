@@ -1,3 +1,6 @@
+"""Server-side UDP connection."""
+from __future__ import annotations
+
 import asyncio
 import functools
 from contextlib import asynccontextmanager
@@ -7,9 +10,7 @@ from typing import (  # `Never` is introduced in 3.11 but aioudp supports 3.8+
     Awaitable,
     Callable,
     Coroutine,
-    Dict,
     NoReturn,
-    Optional,
 )
 from typing import NoReturn as Never
 
@@ -17,12 +18,12 @@ from aioudp import connection
 
 
 @dataclass
-class ServerProtocol(asyncio.DatagramProtocol):
+class _ServerProtocol(asyncio.DatagramProtocol):
     handler: Callable[[connection.Connection], Coroutine[Never, Never, None]]
-    msg_handler: Dict[connection.AddrType, "asyncio.Queue[Optional[bytes]]"] = field(
+    msg_handler: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
         default_factory=dict,
     )
-    transport: Optional[asyncio.transports.DatagramTransport] = None
+    transport: None | asyncio.transports.DatagramTransport = None
 
     def connection_made(
         self,
@@ -38,7 +39,8 @@ class ServerProtocol(asyncio.DatagramProtocol):
             assert self.transport is not None
             asyncio.create_task(
                 self.handler(  # See connnection.py
-                    connection.Connection(  # TODO: REFACTOR: minimal args
+                    connection.Connection(  # TODO(ThatXliner): REFACTOR: minimal args
+                        # https://github.com/ThatXliner/aioudp/issues/15
                         send_func=functools.partial(self.transport.sendto, addr=addr),
                         recv_func=self.msg_handler[addr].get,
                         is_closing=self.transport.is_closing,
@@ -56,7 +58,7 @@ class ServerProtocol(asyncio.DatagramProtocol):
         # Haven't figured out why this can happen
         raise exc
 
-    def connection_lost(self, exc: Optional[Exception]) -> None:
+    def connection_lost(self, exc: None | Exception) -> None:
         # Haven't figured out why this can happen
         if exc is not None:
             raise exc
@@ -74,13 +76,14 @@ async def serve(
 
     See the docs for an example UDP echo server
 
-    See Also
+    See Also:
     --------
         :func:`connect`
 
         :doc:`An example UDP echo server </index>`
 
     Args:
+    ----
         host (str): The host name/address to run the server on
         port (int): The port number to run the server on
         handler (Callable[[connection.Connection], Awaitable[None]]):
@@ -95,10 +98,10 @@ async def serve(
         return await handler(con)
 
     loop = asyncio.get_running_loop()
-    transport: "asyncio.BaseTransport"
-    _: "asyncio.BaseProtocol"
+    transport: asyncio.BaseTransport
+    _: asyncio.BaseProtocol
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ServerProtocol(wrap_handler),
+        lambda: _ServerProtocol(wrap_handler),
         local_addr=(host, port),
     )
     try:

@@ -1,5 +1,8 @@
+"""Connection class for aioudp."""
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Awaitable, Callable, Optional, Tuple
+from typing import Awaitable, Callable, Tuple
 
 from aioudp import exceptions
 
@@ -9,14 +12,15 @@ AddrType = Tuple[str, int]
 
 
 @dataclass
-class Connection:  # TODO: REFACTOR: minimal args
+class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
+    # https://github.com/ThatXliner/aioudp/issues/15
     """Represents a server-client connection. Do not instantiate manually."""
 
     send_func: Callable[[bytes], None]
-    recv_func: Callable[[], Awaitable[Optional[bytes]]]
+    recv_func: Callable[[], Awaitable[None | bytes]]
     is_closing: Callable[[], bool]
     get_local_addr: Callable[[], AddrType]
-    get_remote_addr: Callable[[], Optional[AddrType]]
+    get_remote_addr: Callable[[], None | AddrType]
     closed: bool = False
 
     @property
@@ -36,7 +40,7 @@ class Connection:  # TODO: REFACTOR: minimal args
         )  # This is a bug https://github.com/python/mypy/issues/6910
 
     @property
-    def remote_address(self) -> Optional[AddrType]:
+    def remote_address(self) -> None | AddrType:
         """Returns the remote address of the connection. This is their IP.
 
         .. seealso::
@@ -75,9 +79,10 @@ class Connection:  # TODO: REFACTOR: minimal args
             Since this is UDP, there is no guarantee that the message will be sent
 
         Args:
+        ----
             data (bytes): The message in bytes to send
 
-        Raises
+        Raises:
         ------
             exceptions.ConnectionClosedError: The connection is closed
             ValueError: There is no data to send
@@ -90,10 +95,12 @@ class Connection:  # TODO: REFACTOR: minimal args
             raise ValueError(msg)
         self.send_func(data)  # See above
 
-    def __aiter__(self) -> "Connection":
+    def __aiter__(self) -> Connection:
+        """Return an async iterator of messages received."""
         return self
 
     async def __anext__(self) -> bytes:
+        """Get the next message received. Functionally equivalent to :meth:`recv`."""
         try:
             return await self.recv()
         except exceptions.ConnectionClosedError as error:

@@ -1,15 +1,18 @@
+"""Client-side UDP connection."""
+from __future__ import annotations
+
 import asyncio
 import functools
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import AsyncIterator, NoReturn, Optional
+from typing import AsyncIterator, NoReturn
 
 from aioudp import connection
 
 
 @dataclass
-class ClientProtocol(asyncio.DatagramProtocol):
-    msg_queue: "asyncio.Queue[Optional[bytes]]"
+class _ClientProtocol(asyncio.DatagramProtocol):
+    msg_queue: asyncio.Queue[None | bytes]
 
     def datagram_received(self, data: bytes, _: connection.AddrType) -> None:
         self.msg_queue.put_nowait(data)
@@ -18,7 +21,7 @@ class ClientProtocol(asyncio.DatagramProtocol):
         # Haven't figured out why this can happen
         raise exc
 
-    def connection_lost(self, exc: Optional[Exception]) -> None:
+    def connection_lost(self, exc: None | Exception) -> None:
         # Haven't figured out why this can happen
         if exc is not None:
             raise exc
@@ -29,28 +32,30 @@ class ClientProtocol(asyncio.DatagramProtocol):
 async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     """Connect to a UDP server.
 
-    See Also
+    See Also:
     --------
         :func:`serve`
 
     Args:
+    ----
         host (str): The server's host name/address.
         port (int): The server's port number.
 
-    Returns
+    Returns:
     -------
         An asynchronous iterator yielding a connection to the UDP server.
 
     """
     loop = asyncio.get_running_loop()
-    msgs: "asyncio.Queue[Optional[bytes]]" = asyncio.Queue()
+    msgs: asyncio.Queue[None | bytes] = asyncio.Queue()
     transport: asyncio.DatagramTransport
-    _: ClientProtocol
+    _: _ClientProtocol
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: ClientProtocol(msgs),
+        lambda: _ClientProtocol(msgs),
         remote_addr=(host, port),
     )
-    conn = connection.Connection(  # TODO: REFACTOR: minimal args
+    conn = connection.Connection(  # TODO(ThatXliner): REFACTOR: minimal args
+        # https://github.com/ThatXliner/aioudp/issues/15
         send_func=transport.sendto,
         recv_func=msgs.get,
         is_closing=transport.is_closing,
