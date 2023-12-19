@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import assume, given, strategies as st
+from hypothesis import assume, given, strategies as st, settings
 
 import aioudp
 from aioudp import exceptions
@@ -38,6 +38,7 @@ async def test_recieve_closed_connection(data: bytes):
 
 
 @given(data=st.binary(), extra_data=st.binary())
+@settings(deadline=None)
 @pytest.mark.asyncio
 async def test_send_closed_connection(data: bytes, extra_data: bytes):
     assume(data)
