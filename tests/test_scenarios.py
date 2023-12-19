@@ -1,12 +1,11 @@
 import asyncio
 
 import pytest
-from hypothesis import assume, given, strategies as st
 
 import aioudp
 
 
-async def bad_server(connection: aioudp.Connection) -> None:
+async def bad_server(_: aioudp.Connection) -> None:
     raise Exception
 
 
@@ -19,7 +18,7 @@ async def reverse_echo_server(connection: aioudp.Connection) -> None:
     await connection.send(b"Hi")
 
 
-async def no_server(connection: aioudp.Connection) -> None:
+async def no_server(_: aioudp.Connection) -> None:
     pass
 
 

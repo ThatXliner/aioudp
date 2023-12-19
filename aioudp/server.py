@@ -5,13 +5,7 @@ import asyncio
 import functools
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import (
-    AsyncIterator,
-    Awaitable,
-    Callable,
-    Coroutine,
-    NoReturn,
-)
+from typing import AsyncIterator, Awaitable, Callable, Coroutine, NoReturn
 
 from aioudp import connection
 
@@ -44,8 +38,8 @@ class _ServerProtocol(asyncio.DatagramProtocol):
             assert self.transport is not None
 
             def done(_) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN001
-                self.msg_queues.pop(addr, None)
-                self.msg_queues.pop(addr, None)
+                del self.msg_queues[addr]
+                del self.msg_handlers[addr]
 
             # Strong reference is needed
             self.msg_handlers[addr] = asyncio.create_task(
@@ -76,6 +70,7 @@ class _ServerProtocol(asyncio.DatagramProtocol):
             raise exc
         for key in self.msg_queues:
             self.msg_queues[key].put_nowait(None)
+            self.msg_handlers[key].cancel()
 
 
 @asynccontextmanager
