@@ -1,4 +1,4 @@
-name: Release Asset Uploader
+name: Release And Upload
 on:
   release:
     types:
@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: 3
@@ -15,8 +15,23 @@ jobs:
         uses: snok/install-poetry@v1
       - name: Build artifacts
         run: poetry build
-      - name: Upload artifacts
+      - name: Upload artifacts to release
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: dist/*
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Build artifacts
+        run: poetry build
+      - name: Upload artifacts to PyPi
+        run: poetry publish --username __token__ --password $PYPI_TOKEN
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
