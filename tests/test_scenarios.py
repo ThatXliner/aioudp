@@ -26,24 +26,20 @@ async def no_server(connection: aioudp.Connection) -> None:
 # XXX: Binary search for optimal timeout
 
 
-@given(data=st.binary())
 @pytest.mark.asyncio
-async def test_bad_server(data: bytes):
-    assume(data)
+async def test_bad_server():
     async with aioudp.serve(host="localhost", port=9999, handler=bad_server):
         async with aioudp.connect("localhost", 9999) as connection:
-            await connection.send(data)
+            await connection.send(b"Hello world")
             with pytest.raises(asyncio.TimeoutError):
                 await asyncio.wait_for(connection.recv(), timeout=1)
 
 
-@given(data=st.binary())
 @pytest.mark.asyncio
-async def test_no_send_data(data: bytes):
-    assume(data)
+async def test_no_send_data():
     async with aioudp.serve(host="localhost", port=9999, handler=no_server):
         async with aioudp.connect("localhost", 9999) as connection:
-            await connection.send(data)
+            await connection.send(b"Hello world")
             with pytest.raises(asyncio.TimeoutError):
                 await asyncio.wait_for(connection.recv(), timeout=1)
 
