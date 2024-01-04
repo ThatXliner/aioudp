@@ -14,16 +14,6 @@ from aioudp import connection
 class _ClientProtocol(asyncio.DatagramProtocol):
     msg_queue: asyncio.Queue[None | bytes]
 
-    def connection_made(
-        self,
-        transport: asyncio.DatagramTransport,  # type: ignore[override]
-        # I am aware of the Liskov subsitution principle
-        # but asyncio.DatagramProtocol had this function signature
-    ) -> None:
-        # This is to make sure that the connection works
-        # See https://github.com/ThatXliner/aioudp/pull/3 for more information
-        transport.sendto(b"trash")
-
     def datagram_received(self, data: bytes, _: connection.AddrType) -> None:
         self.msg_queue.put_nowait(data)
 
@@ -73,6 +63,9 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
         get_remote_addr=functools.partial(transport.get_extra_info, "peername"),
     )
     try:
+        # This is to make sure that the connection works
+        # See https://github.com/ThatXliner/aioudp/pull/3 for more information
+        await conn.send(b"trash")
         yield conn
     finally:
         transport.close()
