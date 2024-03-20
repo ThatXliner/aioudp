@@ -23,7 +23,7 @@ keywords = ["udp", "asyncio"] # Maximum of 5 keywords
 python = "^3.8"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"
+black = ">=23.1,<25.0"
 hypothesis = "^6.68.2"
 mypy = "^1.0.1"
 pytest = "^7.2.1"
