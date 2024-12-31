@@ -4,17 +4,23 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
 from typing import AsyncIterator
 
 from aioudp import connection
 
 
-@dataclass
 class _ClientProtocol(asyncio.DatagramProtocol):
-    on_connection: asyncio.Future[connection.Connection]
-    on_connection_lost: asyncio.Future[bool]
-    msg_queue: asyncio.Queue[bytes] = field(default_factory=asyncio.Queue)
+    def __init__(
+        self,
+        on_connection: asyncio.Future[connection.Connection],
+        on_connection_lost: asyncio.Future[bool],
+        queue_size: int | None = None,
+    ) -> None:
+        self.on_connection = on_connection
+        self.on_connection_lost = on_connection_lost
+        self.msg_queue = (
+            asyncio.Queue() if queue_size is None else asyncio.Queue(queue_size)
+        )
 
     def connection_made(self, transport: asyncio.DatagramTransport) -> None:
         self.on_connection.set_result(
@@ -41,20 +47,24 @@ class _ClientProtocol(asyncio.DatagramProtocol):
 
 
 @asynccontextmanager
-async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
+async def connect(
+    host: str,
+    port: int,
+    queue_size: int | None = None,
+) -> AsyncIterator[connection.Connection]:
     """Connect to a UDP server.
 
     See Also:
-    --------
         :func:`serve`
 
     Args:
-    ----
         host (str): The server's host name/address.
         port (int): The server's port number.
+        queue_size (int | None):
+            The maximum size of the message queue used internally.
+            Defaults to None, meaning an unlimited size
 
     Returns:
-    -------
         An asynchronous iterator yielding a connection to the UDP server.
 
     """
@@ -62,7 +72,7 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     on_connection = loop.create_future()
     on_connection_lost = loop.create_future()
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: _ClientProtocol(on_connection, on_connection_lost),
+        lambda: _ClientProtocol(on_connection, on_connection_lost, queue_size),
         remote_addr=(host, port),
     )
 

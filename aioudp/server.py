@@ -14,6 +14,7 @@ from aioudp import connection
 @dataclass
 class _ServerProtocol(asyncio.DatagramProtocol):
     handler: Callable[[connection.Connection], Coroutine[Any, Any, None]]
+    queue_size: int | None
     msg_queues: dict[connection.AddrType, asyncio.Queue[bytes]] = field(
         default_factory=dict,
     )
@@ -35,7 +36,11 @@ class _ServerProtocol(asyncio.DatagramProtocol):
 
     def datagram_received(self, data: bytes, addr: connection.AddrType) -> None:
         if addr not in self.msg_queues:
-            self.msg_queues[addr] = asyncio.Queue()
+            self.msg_queues[addr] = (
+                asyncio.Queue()
+                if self.queue_size is None
+                else asyncio.Queue(self.queue_size)
+            )
             assert self.transport is not None
 
             def done(_) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN001
@@ -86,19 +91,18 @@ async def serve(
     host: str,
     port: int,
     handler: Callable[[connection.Connection], Coroutine[Any, Any, None]],
+    queue_size: int | None = None,
 ) -> AsyncIterator[None]:
     """Run a UDP server.
 
     See the docs for an example UDP echo server
 
     See Also:
-    --------
         :func:`connect`
 
         :doc:`An example UDP echo server </index>`
 
     Args:
-    ----
         host (str): The host name/address to run the server on
         port (int): The port number to run the server on
         handler (Callable[[connection.Connection], Awaitable[None]]):
@@ -106,12 +110,16 @@ async def serve(
             It should accept an instance of :class:`connection.Connection`
             and doesn't need to return anything.
 
+        queue_size (int | None):
+            The maximum size of the message queue used internally.
+            Defaults to None, meaning an unlimited size
+
     """
     loop = asyncio.get_running_loop()
     transport: asyncio.BaseTransport
     _: asyncio.BaseProtocol
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: _ServerProtocol(handler),
+        lambda: _ServerProtocol(handler, queue_size),
         local_addr=(host, port),
     )
     try:

@@ -15,11 +15,11 @@ jobs:
         uses: snok/install-poetry@v1
       - name: Build artifacts
         run: poetry build
-      - name: Upload artifacts to release
-        uses: shogo82148/actions-upload-release-asset@v1
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/*
+          name: python-package-distributions
+          path: dist/
   release:
     runs-on: ubuntu-latest
     needs:
@@ -36,11 +36,11 @@ jobs:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
-      - name: Store the distribution packages
-        uses: actions/upload-artifact@v4
+      - name: Upload artifacts to release
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
-          name: python-package-distributions
-          path: dist/
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/*
   upload:
     runs-on: ubuntu-latest
     environment:

@@ -32,8 +32,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
         .. seealso::
             :meth:`remote_address`
 
-        Returns
-        -------
+        Returns:
             tuple[str, int]: This is a `tuple` containing the hostname and port
 
         """
@@ -46,8 +45,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
         .. seealso::
             :meth:`local_address`
 
-        Returns
-        -------
+        Returns:
             tuple[str, int]: This is a `tuple` containing the hostname and port
 
         """
@@ -56,12 +54,10 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
     async def recv(self) -> bytes:
         """Receives a message from the connection.
 
-        Returns
-        -------
+        Returns:
             bytes: The received `bytes`.
 
-        Raises
-        ------
+        Raises:
             exceptions.ConnectionClosedError: The connection is closed
 
         """
@@ -77,13 +73,12 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             Since this is UDP, there is no guarantee that the message will be sent
 
         Args:
-        -----
             data (bytes): The message in bytes to send
 
         Raises:
-        ------
             exceptions.ConnectionClosedError: The connection is closed
             ValueError: There is no data to send
+
         """
         if self.is_closing():
             msg = "The connection is closed"
