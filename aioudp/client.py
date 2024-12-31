@@ -72,7 +72,9 @@ async def connect(
             what you're doing, there is no need to change this value.
         **kwargs:
             Additional keyword arguments to pass to
-            :func:`asyncio.loop.create_datagram_endpoint`.
+
+            `loop.create_datagram_endpoint <https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.create_datagram_endpoint>`_.
+
 
     Returns:
         An asynchronous iterator yielding a connection to the UDP server.
