@@ -22,6 +22,8 @@ jobs:
           path: dist/
   release:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # IMPORTANT: mandatory for trusted publishing
     needs:
       - build
     steps:
@@ -44,8 +46,8 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/aioudp # Replace <package-name> with your PyPI project name
+      name: pypi
+      url: https://pypi.org/p/aioudp # Replace <package-name> with your PyPI project name
     permissions:
       id-token: write # IMPORTANT: mandatory for trusted publishing
     needs:
@@ -58,5 +60,3 @@ jobs:
           path: dist/
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
