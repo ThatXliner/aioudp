@@ -9,6 +9,8 @@
   <img src="docs/assets/Light-Banner@2x.png" alt="AioUDP Banner" style="max-width: 100%; height: auto;">
 </picture>
 
+> A better API for asynchronous UDP
+
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -22,7 +24,6 @@
 [![PyPI](https://img.shields.io/pypi/v/aioudp)](https://pypi.org/project/aioudp)
 [![PyPI - License](https://img.shields.io/pypi/l/aioudp)](#license)
 
-> A better API for asynchronous UDP
 
 A [websockets](https://websockets.readthedocs.io/en/stable/index.html)-like API for [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol)
 
