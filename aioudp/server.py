@@ -92,6 +92,7 @@ async def serve(
     port: int,
     handler: Callable[[connection.Connection], Coroutine[Any, Any, None]],
     queue_size: int | None = None,
+    **kwargs: Any,  # noqa: ANN401
 ) -> AsyncIterator[None]:
     """Run a UDP server.
 
@@ -112,7 +113,11 @@ async def serve(
 
         queue_size (int | None):
             The maximum size of the message queue used internally.
-            Defaults to None, meaning an unlimited size
+            Defaults to None, meaning an unlimited size. Unless you know for sure
+            what you're doing, there is no need to change this value.
+        **kwargs:
+            Additional keyword arguments to pass to
+            :func:`asyncio.loop.create_datagram_endpoint`.
 
     """
     loop = asyncio.get_running_loop()
@@ -121,6 +126,7 @@ async def serve(
     transport, _ = await loop.create_datagram_endpoint(
         lambda: _ServerProtocol(handler, queue_size),
         local_addr=(host, port),
+        **kwargs,
     )
     try:
         yield

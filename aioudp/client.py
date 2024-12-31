@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from typing import Any, AsyncIterator
 
 from aioudp import connection
 
@@ -56,6 +56,7 @@ async def connect(
     host: str,
     port: int,
     queue_size: int | None = None,
+    **kwargs: Any,  # noqa: ANN401
 ) -> AsyncIterator[connection.Connection]:
     """Connect to a UDP server.
 
@@ -67,7 +68,11 @@ async def connect(
         port (int): The server's port number.
         queue_size (int | None):
             The maximum size of the message queue used internally.
-            Defaults to None, meaning an unlimited size
+            Defaults to None, meaning an unlimited size. Unless you know for sure
+            what you're doing, there is no need to change this value.
+        **kwargs:
+            Additional keyword arguments to pass to
+            :func:`asyncio.loop.create_datagram_endpoint`.
 
     Returns:
         An asynchronous iterator yielding a connection to the UDP server.
@@ -79,6 +84,7 @@ async def connect(
     transport, _ = await loop.create_datagram_endpoint(
         lambda: _ClientProtocol(on_connection, on_connection_lost, queue_size),
         remote_addr=(host, port),
+        **kwargs,
     )
 
     conn = await on_connection

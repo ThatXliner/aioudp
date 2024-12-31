@@ -68,6 +68,10 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
     async def send(self, data: bytes) -> None:
         """Send a message to the connection.
 
+        The reason why this send function is `async` is due to API consistency.
+        There is actually no underlying `async` call so feel free to
+        just forgo the `await`.
+
         .. warning::
             Since this is UDP, there is no guarantee that the message will be sent
 
