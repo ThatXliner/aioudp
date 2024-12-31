@@ -15,8 +15,9 @@ Example Usage
 
 Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pyaudio/>`_:
 
+
 .. code-block:: python
-    :title: Server code (speaker)
+    :caption: Server code (speaker)
 
     import asyncio
     import signal
@@ -39,7 +40,7 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
         CHANNELS = 1
         RATE = 44100
 
-        async def handler(connection):
+        async def handler(connection: aioudp.Connection) -> None:
             # Make sure only one person uses the PA at a time
             if connections:
                 await connection.send(DECLINE)
@@ -70,9 +71,9 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
 
             connections.remove(None)
 
-        # This way, we can CTRl-C it properly
         loop = asyncio.get_running_loop()
         stop = loop.create_future()
+        # This way, we can CTRl-C it properly
         loop.add_signal_handler(signal.SIGINT, stop.set_result, None)
 
         # "0.0.0.0" to expose globally. Serve at port 9999
@@ -84,7 +85,7 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
         asyncio.run(main())
 
 .. code-block:: python
-    :title: User code (microphone)
+    :caption: User code (microphone)
 
     import asyncio
 
@@ -96,7 +97,7 @@ Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pya
     TERMINATOR = b"DONE"
 
 
-    async def main():
+    async def main() -> None:
         # Configuration for PyAudio
         CHUNK = 1024
         FORMAT = pyaudio.paInt16

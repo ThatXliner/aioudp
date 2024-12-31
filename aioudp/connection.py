@@ -34,7 +34,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
 
         Returns
         -------
-            AddrType: This is a `tuple` containing the hostname and port
+            tuple[str, int]: This is a `tuple` containing the hostname and port
 
         """
         return self.get_local_addr()
@@ -48,7 +48,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
 
         Returns
         -------
-            AddrType: This is a `tuple` containing the hostname and port
+            tuple[str, int]: This is a `tuple` containing the hostname and port
 
         """
         return self.get_remote_addr()

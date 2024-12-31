@@ -15,6 +15,8 @@ I recommend a good TCP (to be precise, `WebSockets <https://en.wikipedia.org/wik
 `library called websockets <https://websockets.readthedocs.io/en/stable/>`_.
 It has a similar API to this library. In fact, this library's API was inspired by the websockets library.
 
+Otherwise, if you know what you're doing, just `.encode <https://docs.python.org/3/library/stdtypes.html#str.encode>`_ your strings.
+
 .. _faq-it-hangs:
 
 Why is my code hanging?
