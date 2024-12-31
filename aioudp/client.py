@@ -18,11 +18,16 @@ class _ClientProtocol(asyncio.DatagramProtocol):
     ) -> None:
         self.on_connection = on_connection
         self.on_connection_lost = on_connection_lost
-        self.msg_queue = (
+        self.msg_queue: asyncio.Queue[bytes | None] = (
             asyncio.Queue() if queue_size is None else asyncio.Queue(queue_size)
         )
 
-    def connection_made(self, transport: asyncio.DatagramTransport) -> None:
+    def connection_made(
+        self,
+        transport: asyncio.DatagramTransport,  # type: ignore[override]
+        # I am aware of the Liskov subsitution principle
+        # but asyncio.DatagramProtocol had this function signature
+    ) -> None:
         self.on_connection.set_result(
             connection.Connection(
                 send_func=transport.sendto,
@@ -40,7 +45,7 @@ class _ClientProtocol(asyncio.DatagramProtocol):
         raise exc
 
     def connection_lost(self, exc: Exception | None) -> None:
-        self.msg_queue.shutdown(immediate=True)
+        self.msg_queue.put_nowait(None)
         self.on_connection_lost.set_result(True)
         if exc:
             raise exc

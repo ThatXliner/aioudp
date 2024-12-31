@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Tuple
 
@@ -19,7 +18,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
     """Represents a server-client connection. Do not instantiate manually."""
 
     send_func: Callable[[bytes], None]
-    recv_func: Callable[[], Awaitable[bytes]]
+    recv_func: Callable[[], Awaitable[bytes | None]]
     is_closing: Callable[[], bool]
     get_local_addr: Callable[[], AddrType]
     get_remote_addr: Callable[[], None | AddrType]
@@ -61,10 +60,10 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
 
         """
-        try:
-            return await self.recv_func()
-        except asyncio.QueueShutDown:
-            raise exceptions.ConnectionClosedError  # noqa: B904
+        output = await self.recv_func()
+        if output is None:
+            raise exceptions.ConnectionClosedError
+        return output
 
     async def send(self, data: bytes) -> None:
         """Send a message to the connection.

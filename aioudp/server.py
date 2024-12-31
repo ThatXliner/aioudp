@@ -15,7 +15,7 @@ from aioudp import connection
 class _ServerProtocol(asyncio.DatagramProtocol):
     handler: Callable[[connection.Connection], Coroutine[Any, Any, None]]
     queue_size: int | None
-    msg_queues: dict[connection.AddrType, asyncio.Queue[bytes]] = field(
+    msg_queues: dict[connection.AddrType, asyncio.Queue[bytes | None]] = field(
         default_factory=dict,
     )
     msg_handlers: dict[
@@ -79,7 +79,7 @@ class _ServerProtocol(asyncio.DatagramProtocol):
     # The server is done
     def connection_lost(self, exc: None | Exception) -> None:
         for key in self.msg_queues:
-            self.msg_queues[key].shutdown(immediate=True)
+            self.msg_queues[key].put_nowait(None)
             self.msg_handlers[key].cancel()
         # Haven't figured out why this can happen
         if exc is not None:
