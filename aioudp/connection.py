@@ -1,6 +1,8 @@
 """Connection class for aioudp."""
+
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Tuple
 
@@ -17,7 +19,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
     """Represents a server-client connection. Do not instantiate manually."""
 
     send_func: Callable[[bytes], None]
-    recv_func: Callable[[], Awaitable[None | bytes]]
+    recv_func: Callable[[], Awaitable[bytes]]
     is_closing: Callable[[], bool]
     get_local_addr: Callable[[], AddrType]
     get_remote_addr: Callable[[], None | AddrType]
@@ -63,12 +65,10 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             exceptions.ConnectionClosedError: The connection is closed
 
         """
-        the_next_one = await self.recv_func()
-        if the_next_one is None:
-            assert self.is_closing()
-            msg = "The connection is closed"
-            raise exceptions.ConnectionClosedError(msg)
-        return the_next_one
+        try:
+            return await self.recv_func()
+        except asyncio.QueueShutDown:
+            raise exceptions.ConnectionClosedError  # noqa: B904
 
     async def send(self, data: bytes) -> None:
         """Send a message to the connection.

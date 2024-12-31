@@ -14,10 +14,6 @@ async def echo_server(connection: aioudp.Connection) -> None:
         await connection.send(data)
 
 
-async def reverse_echo_server(connection: aioudp.Connection) -> None:
-    await connection.send(b"Hi")
-
-
 async def no_server(_: aioudp.Connection) -> None:
     pass
 
@@ -41,10 +37,3 @@ async def test_no_send_data():
             await connection.send(b"Hello world")
             with pytest.raises(asyncio.TimeoutError):
                 await asyncio.wait_for(connection.recv(), timeout=1)
-
-
-@pytest.mark.asyncio
-async def test_reverse_echo_works():
-    async with aioudp.serve(host="localhost", port=9999, handler=reverse_echo_server):
-        async with aioudp.connect("localhost", 9999) as connection:
-            await connection.recv() == b"Hi"

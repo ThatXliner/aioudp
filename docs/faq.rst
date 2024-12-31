@@ -22,6 +22,9 @@ Why is my code hanging?
 
 You may be using ``recv`` when the server didn't send anything to the client or an exception happened in the server. If this is the case, you should :ref:`add a timeout <faq-add-timeout>`.
 
+How can I first send a message to the connected client?
+-------------------------------------------------------
+This is currently not possible with this library, as I could not figure out how to do it with the normal Python API in the first place. However, if this is possible in the normal Python asyncio UDP API, this is a limitation of the library and we welcome `you file an issue <https://github.com/ThatXliner/aioudp>`.
 
 .. _faq-add-timeout:
 

@@ -31,10 +31,10 @@ async def main():
         async for message in connection:
             await connection.send(message)
 
-    # Optional. This is for properly exiting the server when Ctrl-C is pressed
-    # or when the process is killed/terminated
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
+    # Optional. This is for properly exiting the server when Ctrl-C is pressed
+    # or when the process is killed/terminated
     loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
     loop.add_signal_handler(signal.SIGINT, stop.set_result, None)
 

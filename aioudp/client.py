@@ -1,31 +1,45 @@
 """Client-side UDP connection."""
+
 from __future__ import annotations
 
 import asyncio
-import functools
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
-from typing import AsyncIterator, NoReturn
+from dataclasses import dataclass, field
+from typing import AsyncIterator
 
 from aioudp import connection
+
+ngr = 0
 
 
 @dataclass
 class _ClientProtocol(asyncio.DatagramProtocol):
-    msg_queue: asyncio.Queue[None | bytes]
+    on_connection: asyncio.Future[connection.Connection]
+    on_connection_lost: asyncio.Future[bool]
+    msg_queue: asyncio.Queue[bytes] = field(default_factory=asyncio.Queue)
 
-    def datagram_received(self, data: bytes, _: connection.AddrType) -> None:
+    def connection_made(self, transport: asyncio.DatagramTransport) -> None:
+        self.on_connection.set_result(
+            connection.Connection(
+                send_func=transport.sendto,
+                recv_func=self.msg_queue.get,
+                is_closing=transport.is_closing,
+                get_local_addr=lambda: transport.get_extra_info("sockname"),
+                get_remote_addr=lambda: transport.get_extra_info("peername"),
+            ),
+        )
+
+    def datagram_received(self, data: bytes, _addr: connection.AddrType) -> None:
         self.msg_queue.put_nowait(data)
 
-    def error_received(self, exc: Exception) -> NoReturn:
-        # Haven't figured out why this can happen
+    def error_received(self, exc: BaseException) -> None:
         raise exc
 
-    def connection_lost(self, exc: None | Exception) -> None:
-        # Haven't figured out why this can happen
-        if exc is not None:
+    def connection_lost(self, exc: BaseException) -> None:
+        self.msg_queue.shutdown(immediate=True)
+        self.on_connection_lost.set_result(True)
+        if exc:
             raise exc
-        self.msg_queue.put_nowait(None)
 
 
 @asynccontextmanager
@@ -47,25 +61,16 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
 
     """
     loop = asyncio.get_running_loop()
-    msgs: asyncio.Queue[None | bytes] = asyncio.Queue()
-    transport: asyncio.DatagramTransport
-    _: _ClientProtocol
+    on_connection = asyncio.Future()
+    on_connection_lost = asyncio.Future()
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: _ClientProtocol(msgs),
+        lambda: _ClientProtocol(on_connection, on_connection_lost),
         remote_addr=(host, port),
     )
-    conn = connection.Connection(  # TODO(ThatXliner): REFACTOR: minimal args
-        # https://github.com/ThatXliner/aioudp/issues/15
-        send_func=transport.sendto,
-        recv_func=msgs.get,
-        is_closing=transport.is_closing,
-        get_local_addr=functools.partial(transport.get_extra_info, "sockname"),
-        get_remote_addr=functools.partial(transport.get_extra_info, "peername"),
-    )
+
+    conn = await on_connection
     try:
-        # This is to make sure that the connection works
-        # See https://github.com/ThatXliner/aioudp/pull/3 for more information
-        await conn.send(b"trash")
         yield conn
     finally:
         transport.close()
+        await on_connection_lost
