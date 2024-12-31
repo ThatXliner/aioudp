@@ -1,5 +1,14 @@
 # AioUDP
 
+<picture>
+  <!-- Dark mode image -->
+  <source srcset="docs/assets/Dark-Banner@2x.png" media="(prefers-color-scheme: dark)">
+  <!-- Light mode image -->
+  <source srcset="docs/assets/Light-Banner@2x.png" media="(prefers-color-scheme: light)">
+  <!-- Fallback image -->
+  <img src="docs/assets/Light-Banner@2x.png" alt="AioUDP Banner" style="max-width: 100%; height: auto;">
+</picture>
+
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
