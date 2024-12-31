@@ -9,8 +9,6 @@ from typing import AsyncIterator
 
 from aioudp import connection
 
-ngr = 0
-
 
 @dataclass
 class _ClientProtocol(asyncio.DatagramProtocol):
@@ -35,7 +33,7 @@ class _ClientProtocol(asyncio.DatagramProtocol):
     def error_received(self, exc: BaseException) -> None:
         raise exc
 
-    def connection_lost(self, exc: BaseException) -> None:
+    def connection_lost(self, exc: Exception | None) -> None:
         self.msg_queue.shutdown(immediate=True)
         self.on_connection_lost.set_result(True)
         if exc:
