@@ -60,5 +60,4 @@ html_theme_options = {
     "github_count": True,
     "github_repo": "aioudp",
     "github_user": "ThatXliner",
-    "github_banner": True,
 }
