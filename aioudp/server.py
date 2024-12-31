@@ -1,19 +1,20 @@
 """Server-side UDP connection."""
+
 from __future__ import annotations
 
 import asyncio
 import functools
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import AsyncIterator, Awaitable, Callable, Coroutine, NoReturn
+from typing import Any, AsyncIterator, Callable, Coroutine, NoReturn
 
 from aioudp import connection
 
 
 @dataclass
 class _ServerProtocol(asyncio.DatagramProtocol):
-    handler: Callable[[connection.Connection], Coroutine[NoReturn, NoReturn, None]]
-    msg_queues: dict[connection.AddrType, asyncio.Queue[None | bytes]] = field(
+    handler: Callable[[connection.Connection], Coroutine[Any, Any, None]]
+    msg_queues: dict[connection.AddrType, asyncio.Queue[bytes]] = field(
         default_factory=dict,
     )
     msg_handlers: dict[
@@ -26,7 +27,7 @@ class _ServerProtocol(asyncio.DatagramProtocol):
 
     def connection_made(
         self,
-        transport: asyncio.transports.DatagramTransport,  # type: ignore[override]
+        transport: asyncio.DatagramTransport,  # type: ignore[override]
         # I am aware of the Liskov subsitution principle
         # but asyncio.DatagramProtocol had this function signature
     ) -> None:
@@ -53,31 +54,38 @@ class _ServerProtocol(asyncio.DatagramProtocol):
                             self.transport.get_extra_info,
                             "sockname",
                         ),
-                        get_remote_addr=lambda: addr,
+                        # This should theoretically be
+                        # the same as the `addr` parameter
+                        get_remote_addr=functools.partial(
+                            self.transport.get_extra_info,
+                            "peername",
+                        ),
                     ),
                 ),
             )
             self.msg_handlers[addr].add_done_callback(done)
+
         self.msg_queues[addr].put_nowait(data)
 
     def error_received(self, exc: Exception) -> NoReturn:
         # Haven't figured out why this can happen
         raise exc
 
+    # The server is done
     def connection_lost(self, exc: None | Exception) -> None:
+        for key in self.msg_queues:
+            self.msg_queues[key].shutdown(immediate=True)
+            self.msg_handlers[key].cancel()
         # Haven't figured out why this can happen
         if exc is not None:
             raise exc
-        for key in self.msg_queues:
-            self.msg_queues[key].put_nowait(None)
-            self.msg_handlers[key].cancel()
 
 
 @asynccontextmanager
 async def serve(
     host: str,
     port: int,
-    handler: Callable[[connection.Connection], Awaitable[None]],
+    handler: Callable[[connection.Connection], Coroutine[Any, Any, None]],
 ) -> AsyncIterator[None]:
     """Run a UDP server.
 
@@ -99,16 +107,11 @@ async def serve(
             and doesn't need to return anything.
 
     """
-
-    async def wrap_handler(con: connection.Connection) -> None:
-        await con.recv()
-        return await handler(con)
-
     loop = asyncio.get_running_loop()
     transport: asyncio.BaseTransport
     _: asyncio.BaseProtocol
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: _ServerProtocol(wrap_handler),
+        lambda: _ServerProtocol(handler),
         local_addr=(host, port),
     )
     try:
