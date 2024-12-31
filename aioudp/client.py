@@ -61,8 +61,8 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
 
     """
     loop = asyncio.get_running_loop()
-    on_connection = asyncio.Future()
-    on_connection_lost = asyncio.Future()
+    on_connection = loop.create_future()
+    on_connection_lost = loop.create_future()
     transport, _ = await loop.create_datagram_endpoint(
         lambda: _ClientProtocol(on_connection, on_connection_lost),
         remote_addr=(host, port),
