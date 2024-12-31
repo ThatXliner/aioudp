@@ -14,7 +14,15 @@ from aioudp import connection
 class _ClientProtocol(asyncio.DatagramProtocol):
     on_connection: asyncio.Future[connection.Connection]
     on_connection_lost: asyncio.Future[bool]
-    msg_queue: asyncio.Queue[bytes] = field(default_factory=asyncio.Queue)
+    queue_size: int | None = field(default=None)
+    msg_queue: asyncio.Queue[bytes] = field(default=None)
+
+    def __post_init__(self):
+        self.msg_queue = (
+            asyncio.Queue()
+            if self.queue_size is None
+            else asyncio.Queue(self.queue_size)
+        )
 
     def connection_made(self, transport: asyncio.DatagramTransport) -> None:
         self.on_connection.set_result(
@@ -41,7 +49,11 @@ class _ClientProtocol(asyncio.DatagramProtocol):
 
 
 @asynccontextmanager
-async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
+async def connect(
+    host: str,
+    port: int,
+    queue_size: int | None = None,
+) -> AsyncIterator[connection.Connection]:
     """Connect to a UDP server.
 
     See Also:
@@ -52,6 +64,8 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     ----
         host (str): The server's host name/address.
         port (int): The server's port number.
+        queue_size (int | None): The maximum size of the message queue used internally.
+                                 Defaults to None, meaning an unlimited size
 
     Returns:
     -------
@@ -62,7 +76,7 @@ async def connect(host: str, port: int) -> AsyncIterator[connection.Connection]:
     on_connection = loop.create_future()
     on_connection_lost = loop.create_future()
     transport, _ = await loop.create_datagram_endpoint(
-        lambda: _ClientProtocol(on_connection, on_connection_lost),
+        lambda: _ClientProtocol(on_connection, on_connection_lost, queue_size),
         remote_addr=(host, port),
     )
 
