@@ -98,21 +98,21 @@ async def serve(
     See the docs for an example UDP echo server
 
     See Also:
-    --------
         :func:`connect`
 
         :doc:`An example UDP echo server </index>`
 
     Args:
-    ----
         host (str): The host name/address to run the server on
         port (int): The port number to run the server on
         handler (Callable[[connection.Connection], Awaitable[None]]):
             An asynchronous function to handle a request
             It should accept an instance of :class:`connection.Connection`
             and doesn't need to return anything.
-        queue_size (int | None): The maximum size of the message queue used internally.
-                                 Defaults to None, meaning an unlimited size
+
+        queue_size (int | None):
+            The maximum size of the message queue used internally.
+            Defaults to None, meaning an unlimited size
 
     """
     loop = asyncio.get_running_loop()

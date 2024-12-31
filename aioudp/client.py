@@ -4,24 +4,22 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
 from typing import AsyncIterator
 
 from aioudp import connection
 
 
-@dataclass
 class _ClientProtocol(asyncio.DatagramProtocol):
-    on_connection: asyncio.Future[connection.Connection]
-    on_connection_lost: asyncio.Future[bool]
-    queue_size: int | None = field(default=None)
-    msg_queue: asyncio.Queue[bytes] = field(default=None)
-
-    def __post_init__(self):
+    def __init__(
+        self,
+        on_connection: asyncio.Future[connection.Connection],
+        on_connection_lost: asyncio.Future[bool],
+        queue_size: int | None = None,
+    ) -> None:
+        self.on_connection = on_connection
+        self.on_connection_lost = on_connection_lost
         self.msg_queue = (
-            asyncio.Queue()
-            if self.queue_size is None
-            else asyncio.Queue(self.queue_size)
+            asyncio.Queue() if queue_size is None else asyncio.Queue(queue_size)
         )
 
     def connection_made(self, transport: asyncio.DatagramTransport) -> None:
@@ -57,18 +55,16 @@ async def connect(
     """Connect to a UDP server.
 
     See Also:
-    --------
         :func:`serve`
 
     Args:
-    ----
         host (str): The server's host name/address.
         port (int): The server's port number.
-        queue_size (int | None): The maximum size of the message queue used internally.
-                                 Defaults to None, meaning an unlimited size
+        queue_size (int | None):
+            The maximum size of the message queue used internally.
+            Defaults to None, meaning an unlimited size
 
     Returns:
-    -------
         An asynchronous iterator yielding a connection to the UDP server.
 
     """
