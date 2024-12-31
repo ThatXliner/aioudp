@@ -77,7 +77,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
             Since this is UDP, there is no guarantee that the message will be sent
 
         Args:
-        ----
+        -----
             data (bytes): The message in bytes to send
 
         Raises:

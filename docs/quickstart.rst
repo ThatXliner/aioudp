@@ -11,7 +11,7 @@ Install this library via pip:
     $ pip install aioudp
 
 Example Usage
------
+-------------
 
 Here's a simple PA system with `PyAudio <https://people.csail.mit.edu/hubert/pyaudio/>`_:
 
