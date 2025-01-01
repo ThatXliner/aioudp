@@ -2,7 +2,7 @@ name: Release And Upload
 on:
   release:
     types:
-      - created
+      - published
 jobs:
   build:
     runs-on: ubuntu-latest
