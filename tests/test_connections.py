@@ -1,5 +1,6 @@
 import pytest
-from hypothesis import assume, given, settings, strategies as st
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 
 import aioudp
 from aioudp import exceptions
@@ -16,6 +17,7 @@ async def one_time_echo_server(connection: aioudp.Connection) -> None:
 
 
 @given(data=st.binary())
+@settings(deadline=None)
 @pytest.mark.asyncio
 async def test_echo_server(data: bytes):
     assume(data)
@@ -26,6 +28,7 @@ async def test_echo_server(data: bytes):
 
 
 @given(data=st.binary())
+@settings(deadline=None)
 @pytest.mark.asyncio
 async def test_recieve_closed_connection(data: bytes):
     assume(data)

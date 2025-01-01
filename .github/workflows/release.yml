@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # IMPORTANT: mandatory for trusted publishing
+      contents: write
     needs:
       - build
     steps:

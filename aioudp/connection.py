@@ -21,7 +21,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
     recv_func: Callable[[], Awaitable[bytes | None]]
     is_closing: Callable[[], bool]
     get_local_addr: Callable[[], AddrType]
-    get_remote_addr: Callable[[], None | AddrType]
+    get_remote_addr: Callable[[], AddrType]
     closed: bool = False
 
     @property
@@ -38,7 +38,7 @@ class Connection:  # TODO(ThatXliner): REFACTOR: minimal args
         return self.get_local_addr()
 
     @property
-    def remote_address(self) -> None | AddrType:
+    def remote_address(self) -> AddrType:
         """Returns the remote address of the connection. This is their IP.
 
         .. seealso::
