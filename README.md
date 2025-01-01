@@ -2,11 +2,11 @@
 
 <picture>
   <!-- Dark mode image -->
-  <source srcset="https://raw.githubusercontent.com/ThatXliner/aioudp/refs/heads/main/docs/assets/Dark-Banner%402x.png" media="(prefers-color-scheme: dark)">
+  <source srcset="docs/assets/Dark-Banner@2x.png" media="(prefers-color-scheme: dark)">
   <!-- Light mode image -->
-  <source srcset="https://raw.githubusercontent.com/ThatXliner/aioudp/refs/heads/main/docs/assets/Light-Banner%402x.png" media="(prefers-color-scheme: light)">
+  <source srcset="docs/assets/Light-Banner@2x.png" media="(prefers-color-scheme: light)">
   <!-- Fallback image -->
-  <img src="docs/assets/Light-Banner@2x.png" alt="AioUDP Banner" style="max-width: 100%; height: auto;">
+  <img src="https://raw.githubusercontent.com/ThatXliner/aioudp/refs/heads/main/docs/assets/Light-Banner%402x.png" alt="AioUDP Banner" style="max-width: 100%; height: auto;">
 </picture>
 
 > A better API for asynchronous UDP
