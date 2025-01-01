@@ -24,6 +24,8 @@
 [![PyPI](https://img.shields.io/pypi/v/aioudp)](https://pypi.org/project/aioudp)
 [![PyPI - License](https://img.shields.io/pypi/l/aioudp)](#license)
 
+> [!NOTE]
+> This repository is *maintained*, but seems stagnant because it is feature-complete. If you find an issue, please [report it](https://github.com/ThatXliner/aioudp/issues?q=sort:updated-desc+is:issue+is:open).
 
 A [websockets](https://websockets.readthedocs.io/en/stable/index.html)-like API for [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol)
 
@@ -99,8 +101,6 @@ $ poetry add aioudp
 - [AioQUIC](https://github.com/aiortc/aioquic), a Python implementation of QUIC.
 
 ## License
-
-Copyright © 2021, Bryan Hu
 
 This project is licensed under the [GNU GPL v3+](https://github.com/ThatXliner/aioudp/blob/main/LICENSE.txt).
 
