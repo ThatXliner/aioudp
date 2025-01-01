@@ -5,7 +5,7 @@ from .client import connect
 from .connection import Connection
 from .server import serve
 
-__all__ = ["connect", "serve", "Connection", "exceptions"]
+__all__ = ["Connection", "connect", "exceptions", "serve"]
 
 
-__version__ = "2.0.0-beta4"
+__version__ = "2.0.0-beta5"
