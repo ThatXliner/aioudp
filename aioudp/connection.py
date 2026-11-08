@@ -12,6 +12,8 @@ __all__ = ["Connection"]
 
 AddrType = Tuple[str, int]
 
+_PROACTOR_LOOP: type | tuple[()] = getattr(asyncio, "ProactorEventLoop", ())
+
 
 class _Inbox:
     def __init__(self, queue_size: int | None) -> None:
@@ -54,6 +56,13 @@ class _Endpoint(asyncio.DatagramProtocol):
             self.transport.sendto(data, addr)
         finally:
             self.sending = False
+
+    def close(self) -> None:
+        self.transport.close()
+        # CPython's proactor transport never calls connection_lost when close()
+        # lands while a send is in flight, and drops queued sends either way.
+        if isinstance(asyncio.get_running_loop(), _PROACTOR_LOOP):
+            self.transport.abort()
 
     def error_received(self, exc: Exception) -> None:
         # The transport reports a failed send synchronously from inside sendto.
@@ -147,8 +156,10 @@ class Connection:
         Raises:
             exceptions.ConnectionClosedError: The connection is closed
             ValueError: There is no data to send
-            OSError: The socket rejected the message right away, for example
-                because it is too large
+            OSError: The socket rejected the message, for example because it
+                is too large. On Windows' default event loop, sends finish in
+                the background, so a client gets this error from a later
+                :meth:`recv` and a server logs it instead.
 
         """
         if self._inbox.closed or self._endpoint.transport.is_closing():

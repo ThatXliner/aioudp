@@ -58,7 +58,7 @@ async def connect(
 
     """
     loop = asyncio.get_running_loop()
-    transport, protocol = await loop.create_datagram_endpoint(
+    _, protocol = await loop.create_datagram_endpoint(
         lambda: _ClientProtocol(queue_size),
         remote_addr=(host, port),
         **kwargs,
@@ -66,5 +66,5 @@ async def connect(
     try:
         yield connection.Connection(protocol, protocol.inbox, None)
     finally:
-        transport.close()
+        protocol.close()
         await protocol.lost

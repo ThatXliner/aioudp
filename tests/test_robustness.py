@@ -149,30 +149,38 @@ async def test_client_recv_raises_asynchronous_socket_errors():
         pending = asyncio.ensure_future(connection.recv())
         await asyncio.sleep(0)
         await connection.send(b"nobody is listening")
-        with pytest.raises(ConnectionError):
+        with pytest.raises(OSError):
             await pending
     assert errors == []
 
 
+async def oversize_send_error(connection):
+    try:
+        await connection.send(b"x" * 70000)
+        await asyncio.wait_for(connection.recv(), timeout=1)
+    except OSError as error:
+        return error
+    return None
+
+
 @bounded
-async def test_send_raises_synchronous_socket_errors():
+async def test_oversize_send_raises_oserror_and_connection_survives(caplog):
     errors = loop_errors()
-    server_error = asyncio.get_running_loop().create_future()
+    server_done = asyncio.get_running_loop().create_future()
 
     async def handler(connection):
-        try:
-            await connection.send(b"x" * 70000)
-        except OSError as error:
-            server_error.set_result(error)
+        await connection.recv()
+        server_done.set_result(await oversize_send_error(connection))
+        await connection.send(b"still serving")
 
     async with aioudp.serve(HOST, 9207, handler):
         async with aioudp.connect(HOST, 9207) as connection:
-            with pytest.raises(OSError):
-                await connection.send(b"x" * 70000)
-            with pytest.raises(asyncio.TimeoutError):
-                await asyncio.wait_for(connection.recv(), timeout=0.1)
+            assert isinstance(await oversize_send_error(connection), OSError)
             await connection.send(b"hi")
-            assert isinstance(await server_error, OSError)
+            assert await connection.recv() == b"still serving"
+            server_error = await server_done
+    server_logged = any(r.name == "aioudp.server" for r in caplog.records)
+    assert isinstance(server_error, OSError) or server_logged
     assert errors == []
 
 

@@ -100,7 +100,7 @@ async def serve(
 
     """
     loop = asyncio.get_running_loop()
-    transport, protocol = await loop.create_datagram_endpoint(
+    _, protocol = await loop.create_datagram_endpoint(
         lambda: _ServerProtocol(handler, queue_size),
         local_addr=(host, port),
         **kwargs,
@@ -108,7 +108,7 @@ async def serve(
     try:
         yield
     finally:
-        transport.close()
+        protocol.close()
         for task in protocol.tasks:
             task.cancel()
         await asyncio.gather(*protocol.tasks, return_exceptions=True)
