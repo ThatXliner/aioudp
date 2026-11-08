@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import sys
 from collections import Counter
 from contextlib import AsyncExitStack
 from typing import Any, Awaitable, Callable, TypeVar
@@ -142,6 +143,10 @@ async def test_raising_handler_does_not_affect_other_peers(
                 assert await conn.recv() == b"still there?"
 
 
+@pytest.mark.xfail(
+    sys.platform == "win32" and sys.version_info < (3, 10),
+    reason="CPython's proactor recvfrom fails on ICMP port-unreachable before 3.10",
+)
 @given(vanished=st.integers(1, 4))
 @pytest.mark.asyncio
 @bounded
