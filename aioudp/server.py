@@ -45,8 +45,6 @@ class _ServerProtocol(_Endpoint):
     def connection_lost(self, _exc: Exception | None) -> None:
         for inbox in self.inboxes.values():
             inbox.close()
-        for task in self.tasks:
-            task.cancel()
 
 
 @asynccontextmanager
@@ -64,6 +62,8 @@ async def serve(
     The first message from a new address starts ``handler`` with a new
     :class:`~aioudp.Connection`. That connection closes when ``handler``
     returns, and the next message from the same address starts a new one.
+    When the server stops, it cancels the handlers that are still running
+    and waits for them to finish.
 
     See Also:
         :func:`connect`
@@ -91,7 +91,7 @@ async def serve(
 
     """
     loop = asyncio.get_running_loop()
-    transport, _ = await loop.create_datagram_endpoint(
+    transport, protocol = await loop.create_datagram_endpoint(
         lambda: _ServerProtocol(handler, queue_size),
         local_addr=(host, port),
         **kwargs,
@@ -100,3 +100,6 @@ async def serve(
         yield
     finally:
         transport.close()
+        for task in protocol.tasks:
+            task.cancel()
+        await asyncio.gather(*protocol.tasks, return_exceptions=True)
