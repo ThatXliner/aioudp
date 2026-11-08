@@ -38,6 +38,14 @@ class _ServerProtocol(_Endpoint):
     def handler_done(self, addr: connection.AddrType, task: asyncio.Task[None]) -> None:
         self.inboxes.pop(addr).close()
         self.tasks.discard(task)
+        if not task.cancelled() and task.exception() is not None:
+            task.get_loop().call_exception_handler(
+                {
+                    "message": f"aioudp handler for {addr} raised",
+                    "exception": task.exception(),
+                    "task": task,
+                },
+            )
 
     def socket_error(self, exc: Exception) -> None:
         logger.warning("Socket error on the server", exc_info=exc)
@@ -62,6 +70,7 @@ async def serve(
     The first message from a new address starts ``handler`` with a new
     :class:`~aioudp.Connection`. That connection closes when ``handler``
     returns, and the next message from the same address starts a new one.
+    If ``handler`` raises, the event loop's exception handler reports it.
     When the server stops, it cancels the handlers that are still running
     and waits for them to finish.
 
