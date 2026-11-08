@@ -51,6 +51,30 @@ Servers that did not use aioudp received the bogus message,
 and when no server was listening, the extra message caused ICMP errors such as ``ConnectionResetError``
 (`#18 <https://github.com/ThatXliner/aioudp/issues/18>`_).
 
+.. _faq-connection-end:
+
+When does a server connection end?
+----------------------------------
+
+When the handler returns.
+UDP has no close message, so the server cannot tell that a client left.
+A handler that loops with ``async for message in connection`` keeps running, and keeps its queue in memory, until the server stops.
+When the server stops, it cancels every handler that is still running.
+
+To end a conversation sooner, return from the handler.
+The next message from the same address starts the handler again with a new connection.
+For example, this handler returns after 30 seconds of silence:
+
+.. code-block:: python
+
+    async def handler(connection):
+        while True:
+            try:
+                message = await asyncio.wait_for(connection.recv(), timeout=30)
+            except asyncio.TimeoutError:
+                return
+            await connection.send(message)
+
 .. _faq-add-timeout:
 
 How can I add a timeout?
