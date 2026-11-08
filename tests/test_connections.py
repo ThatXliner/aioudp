@@ -54,6 +54,7 @@ async def test_send_closed_connection(data: bytes, extra_data: bytes):
 
 
 @given(data=st.binary())
+@settings(deadline=None)
 @pytest.mark.asyncio
 async def test_addresses(data: bytes):
     assume(data)

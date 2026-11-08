@@ -22,11 +22,58 @@ Otherwise, if you know what you're doing, just `.encode <https://docs.python.org
 Why is my code hanging?
 -----------------------
 
-You may be using ``recv`` when the server didn't send anything to the client or an exception happened in the server. If this is the case, you should :ref:`add a timeout <faq-add-timeout>`.
+You may be calling ``recv`` when the other side never sent anything, or the server's handler raised an exception.
+The server reports handler exceptions through the event loop's exception handler, which logs them by default.
+To stop waiting, :ref:`add a timeout <faq-add-timeout>`.
+If your client calls ``recv`` before it sends anything, see :ref:`faq-server-first`.
 
-How can I first send a message to the connected client?
--------------------------------------------------------
-This is currently not possible with this library, as I could not figure out how to do it with the normal Python API in the first place. However, if this is possible in the normal Python asyncio UDP API, this is a limitation of the library and we welcome `you file an issue <https://github.com/ThatXliner/aioudp>`.
+.. _faq-server-first:
+
+Can the server send the first message?
+--------------------------------------
+
+No. UDP has no handshake, so the server learns about a client only when the client's first message arrives.
+That message starts the handler.
+A client that calls ``recv`` before it sends anything waits forever.
+
+Send first from the client, even if the message only says hello:
+
+.. code-block:: python
+
+    async with aioudp.connect("localhost", 9999) as connection:
+        await connection.send(b"hello")
+        greeting = await connection.recv()
+
+Versions before 2.0 hid this problem.
+The client sent ``b"trash"`` when it connected, and the server dropped the first message from every client.
+Version 2.0 removed that workaround.
+Servers that did not use aioudp received the bogus message,
+and when no server was listening, the extra message caused ICMP errors such as ``ConnectionResetError``
+(`#18 <https://github.com/ThatXliner/aioudp/issues/18>`_).
+
+.. _faq-connection-end:
+
+When does a server connection end?
+----------------------------------
+
+When the handler returns.
+UDP has no close message, so the server cannot tell that a client left.
+A handler that loops with ``async for message in connection`` keeps running, and keeps its queue in memory, until the server stops.
+When the server stops, it cancels every handler that is still running.
+
+To end a conversation sooner, return from the handler.
+The next message from the same address starts the handler again with a new connection.
+For example, this handler returns after 30 seconds of silence:
+
+.. code-block:: python
+
+    async def handler(connection):
+        while True:
+            try:
+                message = await asyncio.wait_for(connection.recv(), timeout=30)
+            except asyncio.TimeoutError:
+                return
+            await connection.send(message)
 
 .. _faq-add-timeout:
 

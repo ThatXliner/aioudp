@@ -7,48 +7,23 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
 
 from aioudp import connection
+from aioudp.connection import _Endpoint, _Inbox
 
 
-class _ClientProtocol(asyncio.DatagramProtocol):
-    def __init__(
-        self,
-        on_connection: asyncio.Future[connection.Connection],
-        on_connection_lost: asyncio.Future[bool],
-        queue_size: int | None = None,
-    ) -> None:
-        self.on_connection = on_connection
-        self.on_connection_lost = on_connection_lost
-        self.msg_queue: asyncio.Queue[bytes | None] = (
-            asyncio.Queue() if queue_size is None else asyncio.Queue(queue_size)
-        )
-
-    def connection_made(
-        self,
-        transport: asyncio.DatagramTransport,  # type: ignore[override]
-        # I am aware of the Liskov subsitution principle
-        # but asyncio.DatagramProtocol had this function signature
-    ) -> None:
-        self.on_connection.set_result(
-            connection.Connection(
-                send_func=transport.sendto,
-                recv_func=self.msg_queue.get,
-                is_closing=transport.is_closing,
-                get_local_addr=lambda: transport.get_extra_info("sockname"),
-                get_remote_addr=lambda: transport.get_extra_info("peername"),
-            ),
-        )
+class _ClientProtocol(_Endpoint):
+    def __init__(self, queue_size: int | None) -> None:
+        self.inbox = _Inbox(queue_size)
+        self.lost: asyncio.Future[None] = asyncio.get_running_loop().create_future()
 
     def datagram_received(self, data: bytes, _addr: connection.AddrType) -> None:
-        self.msg_queue.put_nowait(data)
+        self.inbox.put(data)
 
-    def error_received(self, exc: BaseException) -> None:
-        raise exc
+    def socket_error(self, exc: Exception) -> None:
+        self.inbox.put(exc)
 
-    def connection_lost(self, exc: Exception | None) -> None:
-        self.msg_queue.put_nowait(None)
-        self.on_connection_lost.set_result(True)
-        if exc:
-            raise exc
+    def connection_lost(self, _exc: Exception | None) -> None:
+        self.inbox.close()
+        self.lost.set_result(None)
 
 
 @asynccontextmanager
@@ -68,8 +43,10 @@ async def connect(
         port (int): The server's port number.
         queue_size (int | None):
             The maximum size of the message queue used internally.
-            Defaults to None, meaning an unlimited size. Unless you know for sure
-            what you're doing, there is no need to change this value.
+            Defaults to None, meaning an unlimited size.
+            When the queue is full, new messages are dropped.
+            Unless you know for sure what you're doing,
+            there is no need to change this value.
         **kwargs:
             Additional keyword arguments to pass to
 
@@ -81,17 +58,13 @@ async def connect(
 
     """
     loop = asyncio.get_running_loop()
-    on_connection = loop.create_future()
-    on_connection_lost = loop.create_future()
-    transport, _ = await loop.create_datagram_endpoint(
-        lambda: _ClientProtocol(on_connection, on_connection_lost, queue_size),
+    _, protocol = await loop.create_datagram_endpoint(
+        lambda: _ClientProtocol(queue_size),
         remote_addr=(host, port),
         **kwargs,
     )
-
-    conn = await on_connection
     try:
-        yield conn
+        yield connection.Connection(protocol, protocol.inbox, None)
     finally:
-        transport.close()
-        await on_connection_lost
+        protocol.close()
+        await protocol.lost
