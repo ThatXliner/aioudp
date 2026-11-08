@@ -27,17 +27,16 @@ certifi = ">=2026.10.19"
 hypothesis = "^6.68.2"
 mypy = "^1.0.1"
 pytest-clarity = "^1.0.1"
-pytest-cov = "^4.0.0"
+pytest-cov = ">=4,<6"
 
 requests = { version = "^2.34.2", python = ">=3.10" }
 urllib3 = { version = "^2.8.0", python = ">=3.10" }
-Sphinx = { version = "^6.1.3", python = ">=3.10" }
+Sphinx = { version = ">=6.1.3,<9.0.0", python = ">=3.10" }
 toml = "^0.10.2"
-ruff = "^0.1.8"
+ruff = ">=0.17.4,<0.18.0"
 pytest-timeout = "^2.3.1"
 # Formatting and lints run on 3.14 only. black 26.10.1 needs 3.10.
 black = { version = "^26.10.1", python = ">=3.10" }
-shed = { version = "^0.10.9", python = ">=3.10" }
 # pytest 9 needs 3.10, and 8.3 is the last release for 3.8.
 pytest = [
     { version = "^8.3.5", python = "<3.9" },
@@ -69,11 +68,14 @@ cmd = "sphinx-build docs build"
 help = "Build documentation"
 
 [tool.poe.tasks.format]
-cmd = "shed"
+sequence = [
+    { cmd = "ruff check aioudp tests --select I --fix" },
+    { cmd = "black aioudp tests" },
+]
 help = "Format code"
 
 [tool.poe.tasks.fix-ruff]
-cmd = "ruff aioudp --fix"
+cmd = "ruff check aioudp --fix"
 help = "Ruff autofix"
 
 [tool.poe.tasks.lint]
@@ -99,13 +101,16 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 # Same as Black.
 line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
 select = ["ALL"]
 ignore = [
     "S101", # "Use of assert detected. I use assert for MyPy
     # "D",    # "No docs"
     # "T20", # "Don't use print or pprint"
     # "ANN",  # Type annotation errors (or the lack of it)
-    "ANN101", # The type annotation for `self` is inferred
+    "CPY001", # Copyright headers are a licensing decision, not a lint
     "FIX002", # "Line contains TODO, consider resolving the issue"
     "FBT",    # I actually don't know why this exists
     # and it seems useless so ignore it
@@ -115,7 +120,7 @@ ignore = [
     "D407",
     "D406",
 ]
-target-version = "py38"
-[tool.ruff.per-file-ignores]
+
+[tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "D"]
 "docs/conf.py" = ["INP001", "A001"]
