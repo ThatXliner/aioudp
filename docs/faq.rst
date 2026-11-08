@@ -22,11 +22,34 @@ Otherwise, if you know what you're doing, just `.encode <https://docs.python.org
 Why is my code hanging?
 -----------------------
 
-You may be using ``recv`` when the server didn't send anything to the client or an exception happened in the server. If this is the case, you should :ref:`add a timeout <faq-add-timeout>`.
+You may be calling ``recv`` when the other side never sent anything, or the server's handler raised an exception.
+The server reports handler exceptions through the event loop's exception handler, which logs them by default.
+To stop waiting, :ref:`add a timeout <faq-add-timeout>`.
+If your client calls ``recv`` before it sends anything, see :ref:`faq-server-first`.
 
-How can I first send a message to the connected client?
--------------------------------------------------------
-This is currently not possible with this library, as I could not figure out how to do it with the normal Python API in the first place. However, if this is possible in the normal Python asyncio UDP API, this is a limitation of the library and we welcome `you file an issue <https://github.com/ThatXliner/aioudp>`.
+.. _faq-server-first:
+
+Can the server send the first message?
+--------------------------------------
+
+No. UDP has no handshake, so the server learns about a client only when the client's first message arrives.
+That message starts the handler.
+A client that calls ``recv`` before it sends anything waits forever.
+
+Send first from the client, even if the message only says hello:
+
+.. code-block:: python
+
+    async with aioudp.connect("localhost", 9999) as connection:
+        await connection.send(b"hello")
+        greeting = await connection.recv()
+
+Versions before 2.0 hid this problem.
+The client sent ``b"trash"`` when it connected, and the server dropped the first message from every client.
+Version 2.0 removed that workaround.
+Servers that did not use aioudp received the bogus message,
+and when no server was listening, the extra message caused ICMP errors such as ``ConnectionResetError``
+(`#18 <https://github.com/ThatXliner/aioudp/issues/18>`_).
 
 .. _faq-add-timeout:
 
