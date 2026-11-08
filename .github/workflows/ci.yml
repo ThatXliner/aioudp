@@ -59,7 +59,7 @@ jobs:
       - id: setup-python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.x
+          python-version: "3.14"
       - uses: actions/cache@v6
         with:
           path: .venv
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version: 3.x
+          python-version: "3.14"
       - name: Install Poetry
         run: python -m pip install "poetry==$POETRY_VERSION"
       - name: Check lock file
@@ -93,7 +93,7 @@ jobs:
       - id: setup-python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.x
+          python-version: "3.14"
       - uses: actions/cache@v6
         with:
           path: .venv
