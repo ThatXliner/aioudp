@@ -4,86 +4,49 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import logging
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
-from typing import Any, AsyncIterator, Callable, Coroutine, NoReturn
+from typing import Any, AsyncIterator, Callable, Coroutine
 
 from aioudp import connection
+from aioudp.connection import _Endpoint, _Inbox
+
+logger = logging.getLogger(__name__)
 
 
-@dataclass
-class _ServerProtocol(asyncio.DatagramProtocol):
-    handler: Callable[[connection.Connection], Coroutine[Any, Any, None]]
-    queue_size: int | None
-    msg_queues: dict[connection.AddrType, asyncio.Queue[bytes | None]] = field(
-        default_factory=dict,
-    )
-    msg_handlers: dict[
-        connection.AddrType,
-        asyncio.Task[None],
-    ] = field(
-        default_factory=dict,
-    )
-    transport: None | asyncio.transports.DatagramTransport = None
-
-    def connection_made(
+class _ServerProtocol(_Endpoint):
+    def __init__(
         self,
-        transport: asyncio.DatagramTransport,  # type: ignore[override]
-        # I am aware of the Liskov subsitution principle
-        # but asyncio.DatagramProtocol had this function signature
+        handler: Callable[[connection.Connection], Coroutine[Any, Any, None]],
+        queue_size: int | None,
     ) -> None:
-        self.transport = transport
+        self.handler = handler
+        self.queue_size = queue_size
+        self.inboxes: dict[connection.AddrType, _Inbox] = {}
+        self.tasks: set[asyncio.Task[None]] = set()
 
     def datagram_received(self, data: bytes, addr: connection.AddrType) -> None:
-        if addr not in self.msg_queues:
-            self.msg_queues[addr] = (
-                asyncio.Queue()
-                if self.queue_size is None
-                else asyncio.Queue(self.queue_size)
+        if addr not in self.inboxes:
+            inbox = self.inboxes[addr] = _Inbox(self.queue_size)
+            task = asyncio.create_task(
+                self.handler(connection.Connection(self, inbox, addr)),
             )
-            assert self.transport is not None
+            self.tasks.add(task)
+            task.add_done_callback(functools.partial(self.handler_done, addr))
+        self.inboxes[addr].put(data)
 
-            def done(_) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN001
-                del self.msg_queues[addr]
-                del self.msg_handlers[addr]
+    def handler_done(self, addr: connection.AddrType, task: asyncio.Task[None]) -> None:
+        self.inboxes.pop(addr).close()
+        self.tasks.discard(task)
 
-            # Strong reference is needed
-            self.msg_handlers[addr] = asyncio.create_task(
-                self.handler(  # See connnection.py
-                    connection.Connection(  # TODO(ThatXliner): REFACTOR: minimal args
-                        # https://github.com/ThatXliner/aioudp/issues/15
-                        send_func=functools.partial(self.transport.sendto, addr=addr),
-                        recv_func=self.msg_queues[addr].get,
-                        is_closing=self.transport.is_closing,
-                        get_local_addr=functools.partial(
-                            self.transport.get_extra_info,
-                            "sockname",
-                        ),
-                        # This should theoretically be
-                        # the same as the `addr` parameter
-                        get_remote_addr=functools.partial(
-                            self.transport.get_extra_info,
-                            "peername",
-                        ),
-                    ),
-                ),
-            )
-            self.msg_handlers[addr].add_done_callback(done)
+    def socket_error(self, exc: Exception) -> None:
+        logger.warning("Socket error on the server", exc_info=exc)
 
-        self.msg_queues[addr].put_nowait(data)
-
-    def error_received(self, exc: Exception) -> NoReturn:
-        # Haven't figured out why this can happen
-        raise exc
-
-    # The server is done
-    def connection_lost(self, exc: None | Exception) -> None:
-        for key in self.msg_queues:
-            self.msg_queues[key].put_nowait(None)
-            self.msg_handlers[key].cancel()
-        # Haven't figured out why this can happen
-        if exc is not None:
-            raise exc
+    def connection_lost(self, _exc: Exception | None) -> None:
+        for inbox in self.inboxes.values():
+            inbox.close()
+        for task in self.tasks:
+            task.cancel()
 
 
 @asynccontextmanager
@@ -97,6 +60,10 @@ async def serve(
     """Run a UDP server.
 
     See the docs for an example UDP echo server
+
+    The first message from a new address starts ``handler`` with a new
+    :class:`~aioudp.Connection`. That connection closes when ``handler``
+    returns, and the next message from the same address starts a new one.
 
     See Also:
         :func:`connect`
@@ -113,8 +80,10 @@ async def serve(
 
         queue_size (int | None):
             The maximum size of the message queue used internally.
-            Defaults to None, meaning an unlimited size. Unless you know for sure
-            what you're doing, there is no need to change this value.
+            Defaults to None, meaning an unlimited size.
+            When the queue is full, new messages are dropped.
+            Unless you know for sure what you're doing,
+            there is no need to change this value.
         **kwargs:
             Additional keyword arguments to pass to
 
@@ -122,8 +91,6 @@ async def serve(
 
     """
     loop = asyncio.get_running_loop()
-    transport: asyncio.BaseTransport
-    _: asyncio.BaseProtocol
     transport, _ = await loop.create_datagram_endpoint(
         lambda: _ServerProtocol(handler, queue_size),
         local_addr=(host, port),
