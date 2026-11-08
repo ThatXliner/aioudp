@@ -272,3 +272,32 @@ async def test_handler_exception_is_reported_once_and_isolated():
                     await asyncio.sleep(0.01)
     assert len(errors) == 1
     assert isinstance(errors[0]["exception"], RuntimeError)
+
+
+@bounded
+async def test_client_receives_after_icmp_error():
+    errors = loop_errors()
+    async with aioudp.connect(HOST, 9231) as connection:
+        await connection.send(b"nobody yet")
+        with pytest.raises((OSError, asyncio.TimeoutError)):
+            await asyncio.wait_for(connection.recv(), timeout=0.5)
+        async with aioudp.serve(HOST, 9231, triple_echo):
+            await connection.send(b"late server")
+            assert await asyncio.wait_for(connection.recv(), 1) == b"late server"
+    assert errors == []
+
+
+@bounded
+async def test_server_receives_after_peer_vanishes():
+    async def delayed_echo(connection):
+        async for message in connection:
+            await asyncio.sleep(0.1)
+            await connection.send(message)
+
+    async with aioudp.serve(HOST, 9232, delayed_echo):
+        async with aioudp.connect(HOST, 9232) as gone:
+            await gone.send(b"x")
+        await asyncio.sleep(0.2)
+        async with aioudp.connect(HOST, 9232) as connection:
+            await connection.send(b"still there?")
+            assert await asyncio.wait_for(connection.recv(), 1) == b"still there?"
