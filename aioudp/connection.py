@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-from typing import Tuple
+from typing import Any, Tuple
 
 from aioudp import exceptions
 
@@ -69,6 +69,17 @@ class _Endpoint(asyncio.DatagramProtocol):
         if self.sending:
             raise exc
         self.socket_error(exc)
+        loop = asyncio.get_running_loop()
+        if isinstance(loop, _PROACTOR_LOOP):
+            loop.call_soon(self._resume_reading)
+
+    def _resume_reading(self) -> None:
+        # CPython's proactor transport stops reading after a failed read, so a
+        # single ICMP error would leave the socket deaf. 3.13+ restarts reading
+        # itself for some errors, which leaves _read_fut set here.
+        transport: Any = self.transport
+        if transport._read_fut is None and not transport.is_closing():  # noqa: SLF001
+            transport._loop_reading()  # noqa: SLF001
 
     def socket_error(self, exc: Exception) -> None:
         raise NotImplementedError
