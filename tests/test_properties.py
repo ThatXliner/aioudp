@@ -251,6 +251,20 @@ async def test_unreachable_server_does_not_raise_into_loop(free_port: int) -> No
     assert errors == []
 
 
+@pytest.mark.asyncio
+@bounded
+async def test_client_receives_after_server_appears(free_port: int) -> None:
+    async with aioudp.connect(HOST, free_port) as conn:
+        await conn.send(b"nobody yet")
+        try:
+            await asyncio.wait_for(conn.recv(), IMMEDIATE)
+        except (OSError, asyncio.TimeoutError):
+            pass
+        async with aioudp.serve(HOST, free_port, echo):
+            await conn.send(b"late server")
+            assert await asyncio.wait_for(conn.recv(), IMMEDIATE * 2) == b"late server"
+
+
 payloads = st.binary(min_size=1, max_size=MAX_STATEFUL_PAYLOAD)
 
 
