@@ -287,6 +287,10 @@ async def test_client_receives_after_icmp_error():
     assert errors == []
 
 
+@pytest.mark.xfail(
+    sys.platform == "win32" and sys.version_info < (3, 10),
+    reason="CPython's proactor recvfrom fails on ICMP port-unreachable before 3.10",
+)
 @bounded
 async def test_server_receives_after_peer_vanishes():
     async def delayed_echo(connection):
