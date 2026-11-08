@@ -242,11 +242,15 @@ async def test_serve_exit_finishes_handlers(free_port: int, peers: int) -> None:
         finally:
             finished.append(conn)
 
-    async with aioudp.serve(HOST, free_port, echo_once_then_block):
+    # Keep every client open so the OS cannot reuse a closed client's port for
+    # the next one, which would route its ping to the earlier, blocked handler.
+    async with aioudp.serve(
+        HOST, free_port, echo_once_then_block
+    ), AsyncExitStack() as stack:
         for _ in range(peers):
-            async with aioudp.connect(HOST, free_port) as conn:
-                await conn.send(b"ping")
-                assert await conn.recv() == b"ping"
+            conn = await stack.enter_async_context(aioudp.connect(HOST, free_port))
+            await conn.send(b"ping")
+            assert await conn.recv() == b"ping"
     assert len(finished) == peers
 
 
