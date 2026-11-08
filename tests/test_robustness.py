@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import sys
 
 import pytest
 
@@ -164,7 +165,20 @@ async def oversize_send_error(connection):
 
 
 @bounded
-async def test_oversize_send_raises_oserror_and_connection_survives(caplog):
+async def test_oversize_send_raises_oserror():
+    errors = loop_errors()
+    async with aioudp.serve(HOST, 9230, triple_echo):
+        async with aioudp.connect(HOST, 9230) as connection:
+            assert isinstance(await oversize_send_error(connection), OSError)
+    assert errors == []
+
+
+@pytest.mark.xfail(
+    sys.platform == "win32" and sys.version_info < (3, 11),
+    reason="CPython's proactor transport loses later datagrams after a failed send",
+)
+@bounded
+async def test_connection_survives_oversize_send(caplog):
     errors = loop_errors()
     server_done = asyncio.get_running_loop().create_future()
 
